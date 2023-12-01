@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 	<head>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript">
-            /*Ignore This Line (Error Handling)*/var l=false;function presentError(m,oe,t=''){if(!l){window.onload=()=>{l=true;presentError(m,oe,t);};return;}document.getElementById("errormessage").innerHTML=m;document.getElementById("errortype").innerHTML=t;document.getElementById("errorbox").removeAttribute("style");throw oe;};window.onload=()=>{l=true;}
+            /*Ignore This Line (Error Handling)*/var l=false;function presentError(m,oe,t=''){if(!l){window.onload=()=>{l=true;presentError(m,oe,t);};return;}document.getElementById("errormessage").innerHTML=m;document.getElementById("errortype").innerHTML=t;document.getElementById("errorbox").removeAttribute("style");throw oe;};window.onload=()=>{l=true;loadCall();}
 			try {
 				const PREREQUISITE_AND = 1;
                 const PREREQUISITE_REQUIRED = 1;
@@ -735,13 +735,65 @@
 						name: "AP Environmental Science",
 						cid: "0307",
 						grade: [10,11,12],
-						exams: [REGENTS_EXAM],
+						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
 						credits: [[SCIENCE_CREDIT, 1]],
 						prerequisites: ["The Living Environment Regents", "Physical Setting: Earth Science Regents","Physical Setting: Physics with Optics","Physical Setting: Chemistry Regents"],
 						prerequisite_types: [PREREQUISITE_REQUIRED,PREREQUISITE_OR,PREREQUISITE_OR,PREREQUISITE_OR],
 						dual: false,
 					},
+					{
+						name: "AP Biology",
+						cid: "0305",
+						grade: [10,11,12],
+						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: ["The Living Environment Regents", "Physical Setting: Chemistry Regents"],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "AP Chemistry",
+						cid: "0313",
+						grade: [10,11,12],
+						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: ["Physical Setting: Chemistry Regents", "Algebra I"],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "AP Physics C",
+						cid: "0320",
+						grade: [11,12],
+						exams: [AP_EXAM_ENCOURAGED],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: ["Physical Setting: Physics", "Calculus"],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
+						dual: false,
+					},
 				];
+				function searchCourses(name="", cid="") {
+					if (name != "") {
+						let objs = []
+						for (let i = 0; i < Courses.length; i++) {
+							if (Courses[i].name.toLowerCase().search(name) != -1) {
+								objs.push(Courses[i])
+							}
+						}
+						return objs;
+					}
+				}
+				function loadCall() {
+					document.getElementById("addcomplete").addEventListener("click",() => {
+						document.getElementById("addcompletebox").removeAttribute("style")
+					})
+					document.getElementById("addcompletename").addEventListener("change", () => {
+						let results = searchCourses(document.getElementById("addcompletename").value)
+						for (var i = 0; i < results.length; i++) {
+							document.getElementById("addcompletesugglist").innerHTML += "<li>"+results[i].name+"</li>"
+						}
+					})
+				}
 				google.charts.load("current", { packages: ["sankey"] });
 				google.charts.setOnLoadCallback(drawChart);
 				function drawChart() {
@@ -816,9 +868,9 @@
 		<style>
 			body {
 				margin: 0px;
-				height: 100vh;
-				width: 100vw;
-				overflow: hidden;
+				overflow-x: hidden;
+				overflow-y: scroll;
+				font-family: Verdana, Geneva, Tahoma, sans-serif;
 			}
 			#sankey_basic {
 				padding: 15px;
@@ -833,15 +885,16 @@
 				
 			}
 			#scrollarea {
-				position: absolute;
-				margin: 15px;
+				position: relative;
+				top: 5px;
+				left: 15px;
 				height: calc(100vh - 30px);
-				width: calc(100vw - 30px);
+				width: calc(100vw - 45px);
 				overflow: hidden;
 				border: #cccccc solid 1px;
 				border-radius: 10px;
 				box-shadow: #444444 0px 0px 20px 0px;
-				-ms-overflow-style: none; /* IE and Edge */
+				-ms-overflow-style: none;
 				scrollbar-width: none;
 			}
 			#scrollarea::-webkit-scrollbar {
@@ -890,9 +943,99 @@
                 padding: 5px;
                 font-family: monospace;
             }
+			#header {
+				display: flex;
+				margin: 10px 40px;
+			}
+			#addcompletebox {
+				position: absolute;
+                top: calc(50% - 50px);
+                left: calc(50% - 50px);
+                transform: translate(-50%, -50%);
+                padding: 20px 50px;
+                margin: 50px 50px;
+                border: #cccccc solid 1px;
+				border-radius: 10px;
+				box-shadow: #6b6b6b 0px 0px 20px 0px;
+				z-index: 10000;
+				background: #ffffff11;
+				backdrop-filter: blur(20px);
+				display: flex;
+				gap: 20px;
+			}
+			button {
+				border: #0084ff solid 1px;
+				border-radius: 10px;
+				background-color: #ffffff;
+				padding: 10px 15px;
+				box-shadow: #cccccc 0px 0px 10px 0px;
+				transition: box-shadow 0.5s;
+			}
+			button:hover {
+				box-shadow: #8d8d8d 0px 0px 10px 0px;
+			}
+			input, label {
+				display:block;
+			}
+			label {
+				font-size: 12.5px;
+				color: #444444
+			}
+			input {
+				border: #adadad solid 1px;
+				border-radius: 10px;
+				background-color: #ffffff;
+				padding: 10px;
+				margin-bottom: 10px;
+				margin-top: 5px;
+				box-shadow: #cccccc 0px 0px 10px 0px;
+			}
+			input:focus {
+				outline: none;
+			}
+			#addcompletesugg {
+				border: #adadad solid 1px;
+				border-radius: 10px;
+				background-color: #ffffff;
+				padding: 10px;
+				margin-bottom: 10px;
+				margin-top: 5px;
+				box-shadow: #cccccc 0px 0px 10px 0px;
+				width: 300px;
+			}
+			#addcompletesugg > h4 {
+				margin: 0px;
+				margin-left: -10px;
+				padding: 0px 0px 10px 10px;
+				font-weight: normal;
+				width: calc(100% + 10px);
+				border-bottom: #adadad solid 1px;
+			}
+			#addcompletesugglist {
+				overflow-y: scroll;
+				overflow-x: visible;
+				min-height: 200px;
+				max-height: 70vh;
+			}
 		</style>
 	</head>
 	<body>
+		<div id="addcompletebox" style="display: none;">
+			<div>
+				<h3>Add Taken Course</h3>
+				<label for="addcompletename">Course Name:</label>
+				<input type="text" name="addcompletename" id="addcompletename" placeholder="Start Typing...">
+				<label for="addcompletecid">Course ID:</label>
+				<input type="text" name="addcompletecid" id="addcompletecid" placeholder="Start Typing...">
+			</div>
+			<div id="addcompletesugg">
+				<h4>Courses</h4>
+				<p>Start Typing...</p>
+				<ul id="addcompletesugglist">
+
+				</ul>
+			</div>
+		</div>
         <div id="errorbox" style="display: none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                 <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" fill="#ff0000"/>
@@ -900,6 +1043,9 @@
             <h4>Error<span id="errortype"></span></h4>
             <p id="errormessage"></p>
         </div>
+		<div id="header">
+			<button id="addcomplete">Add Complete</button>
+		</div>
 		<div id="scrollarea" style="--zoom: 0.3">
 			<div id="sankey_basic"></div>
 		</div>
