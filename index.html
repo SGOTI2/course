@@ -1,556 +1,734 @@
-<html> 
-    <head>
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script type="text/javascript">
-        try {
-            const LOCAL_EXAM = 0
-            const REGENTS_EXAM = 1
-            const AP_EXAM = 2
-            const AP_EXAM_ENCOURAGED = 3
-            const PROJECT = 4
-            const REGENTS_EXAM_JANUARY = 5
+<html>
+	<head>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+            /*Ignore This Line*/var l=false;function presentError(m,oe){if(!l){window.onload=()=>{l=true;presentError(m);};console.log("LNF");return;}document.getElementById("errormessage").innerHTML=m;document.getElementById("errorbox").removeAttribute("hidden");throw oe;};window.onload=()=>{l=true;}
+			try {
+				const PREREQUISITE_AND = 0;
+                const PREREQUISITE_REQUIRED = 0;
+				const PREREQUISITE_OR = 1;
+				const PREREQUISITE_RECOMMENDED = 2;
 
-            const ENGLISH_CREDIT = 0
-            const SOCIAL_STUDY_CREDIT = 1
-            const MATH_CREDIT = 2
-            const SCIENCE_CREDIT = 3
-            const HEALTH_CREDIT = 4
+				const LOCAL_EXAM = 0;
+				const REGENTS_EXAM = 1;
+				const AP_EXAM = 2;
+				const AP_EXAM_ENCOURAGED = 3;
+				const PROJECT = 4;
+				const REGENTS_EXAM_JANUARY = 5;
 
-            const MEETS_COMMENCEMENT_CREDIT = 5
-            const MUSIC_SKILLS_DEVELOPMENT_CREDIT = 6
-            const MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT = 7
-            const GENERAL_MUSIC_CREDIT = 8
-            const Courses = [
-                { // MARK: ENGLISH
-                    name: 'English 9R',
-                    cid: '0003',
-                    grade: [9],
-                    exams: [LOCAL_EXAM],
-                    credits: [[ENGLISH_CREDIT,1]],
-                    prerequisites: ['Incoming 9th grade'],
-                    dual: false
-                },
-                {
-                    name: 'English 10R',
-                    cid: '0005',
-                    grade: [10],
-                    exams: [LOCAL_EXAM],
-                    credits: [[ENGLISH_CREDIT,1]],
-                    prerequisites: ['English 9R'],
-                    dual: false
-                },
-                {
-                    name: 'Pre-AP English 2',
-                    cid: '0070',
-                    grade: [10],
-                    exams: [LOCAL_EXAM],
-                    credits: [[ENGLISH_CREDIT,1]],
-                    prerequisites: ['English 9R'],
-                    dual: false
-                },
-                {
-                    name: 'English 11R',
-                    cid: '0007',
-                    grade: [11],
-                    exams: [REGENTS_EXAM],
-                    credits: [[ENGLISH_CREDIT,1]],
-                    prerequisites: ['English 10R'],
-                    dual: false
-                },
-                {
-                    name: 'AP English Language & Composition',
-                    cid: '0019',
-                    grade: [11],
-                    exams: [REGENTS_EXAM, AP_EXAM_ENCOURAGED],
-                    credits: [[ENGLISH_CREDIT,1]],
-                    prerequisites: ['English 10R', 'Pre-AP English 2'],
-                    dual: false
-                },
-                {
-                    name: 'AP Literature & Composition',
-                    cid: '0020',
-                    grade: [12],
-                    exams: [AP_EXAM_ENCOURAGED],
-                    credits: [[ENGLISH_CREDIT,1]],
-                    prerequisites: ['English 11R', 'AP English Language & Composition'],
-                    dual: false
-                },
-                {
-                    name: 'College Composition (ENG 101)',
-                    cid: '0021',
-                    grade: [12],
-                    exams: [],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 11R'],
-                    dual: true
-                },
-                {
-                    name: 'Creative Nonfiction H',
-                    cid: '0072',
-                    grade: [12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 11R'],
-                    dual: true
-                },
-                {
-                    name: 'Creative Writing',
-                    cid: '0023',
-                    grade: [10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 9R'],
-                    dual: false
-                },
-                {
-                    name: 'Introduction to Film Studies',
-                    cid: '0030',
-                    grade: [10,11,12],
-                    exams: [],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 11R'],
-                    dual: false
-                },
-                {
-                    name: 'Music as Literature',
-                    cid: '0097',
-                    grade: [12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 11R'],
-                    dual: false
-                },
-                {
-                    name: 'Practices of Academic Writing',
-                    cid: '0069',
-                    grade: [12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 11R'],
-                    dual: true
-                },
-                {
-                    name: 'Public Speaking',
-                    cid: '0044',
-                    grade: [10,11,12],
-                    exams: ['Final Speech'],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 11R'],
-                    dual: false
-                },
-                {
-                    name: 'Science Fiction & Fantasy',
-                    cid: '0068',
-                    grade: [10,11,12],
-                    exams: [PROJECT],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 9R'],
-                    dual: false
-                },
-                {
-                    name: 'Shakespeare',
-                    cid: '0032',
-                    grade: [10,11,12],
-                    exams: [PROJECT],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 9R'],
-                    dual: false
-                },
-                {
-                    name: 'Sports Literature',
-                    cid: '0034',
-                    grade: [10,11,12],
-                    exams: [PROJECT],
-                    credits: [[ENGLISH_CREDIT,0.5]],
-                    prerequisites: ['English 9R'],
-                    dual: false
-                },
-                { // MARK: MATH
-                    name: 'Algebra I',
-                    cid: '0406',
-                    grade: [9,10,11,12],
-                    exams: [REGENTS_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: [],
-                    dual: false
-                },
-                {
-                    name: 'Geometry',
-                    cid: '0411',
-                    grade: [9,10,11,12],
-                    exams: [REGENTS_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Algebra I'],
-                    dual: false
-                },
-                {
-                    name: 'Math III',
-                    cid: '0410',
-                    grade: [11,12],
-                    exams: [REGENTS_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Geometry'],
-                    dual: false
-                },
-                {
-                    name: 'Algebra II Extended',
-                    cid: '0442',
-                    grade: [11,12],
-                    exams: [REGENTS_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Geometry'],
-                    dual: false
-                },
-                {
-                    name: 'Algebra II',
-                    cid: '0440',
-                    grade: [9,10,11,12],
-                    exams: [REGENTS_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Geometry'],
-                    dual: false
-                },
-                {
-                    name: 'Algebra II Accelerated',
-                    cid: '0443',
-                    grade: [9,10,11,12],
-                    exams: [REGENTS_EXAM_JANUARY],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Geometry'],
-                    dual: false
-                },
-                {
-                    name: 'Pre-Calculus Accelerated',
-                    cid: '0414',
-                    grade: [9,10,11,12],
-                    exams: [REGENTS_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Geometry'],
-                    dual: false
-                },
-                {
-                    name: 'Math & Financial Applications',
-                    cid: '0605',
-                    grade: [11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Algebra I'],
-                    dual: false
-                },
-                {
-                    name: 'Pre-Calculus',
-                    cid: '0416',
-                    grade: [11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Algebra II'],
-                    dual: false
-                },
-                {
-                    name: 'Pre-Calculus Honors',
-                    cid: '0417',
-                    grade: [10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Algebra II','Algebra II Accelerated'],
-                    dual: false
-                },
-                {
-                    name: 'Calculus H (SUPA)',
-                    cid: '0433',
-                    grade: [12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Pre-Calculus','Pre-Calculus Honors','Pre-Calculus Accelerated'],
-                    dual: true
-                },
-                {
-                    name: 'AP Calculus BC',
-                    cid: '0420',
-                    grade: [11,12],
-                    exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Pre-Calculus','Pre-Calculus Honors','Pre-Calculus Accelerated'],
-                    dual: false
-                },
-                {
-                    name: 'College Statistics',
-                    cid: '0449',
-                    grade: [10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['Algebra II','Algebra II Accelerated'],
-                    dual: true
-                },
-                {
-                    name: 'Calculus III',
-                    cid: '0432',
-                    grade: [],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MATH_CREDIT,1]],
-                    prerequisites: ['AP Calculus BC'],
-                    dual: true
-                },
-                { // MARK: HEALTH
-                    name: 'Health I',
-                    cid: '0902',
-                    grade: [9,10,11,12],
-                    exams: [],
-                    credits: [[HEALTH_CREDIT,0.5]],
-                    prerequisites: [],
-                    dual: false
-                },
-                {
-                    name: 'Health II',
-                    cid: '0903',
-                    grade: [11,12],
-                    exams: [],
-                    credits: [[HEALTH_CREDIT,0.5]],
-                    prerequisites: ['Health I'],
-                    dual: false
-                },
-                {
-                    name: 'Reconnecting Youth',
-                    cid: '0903',
-                    grade: [9,10,11,12],
-                    exams: [],
-                    credits: [[HEALTH_CREDIT,0.5]],
-                    prerequisites: ['Counselor Recommendation'],
-                    dual: false
-                },
-                { // MARK: MUSIC
-                    name: 'Concert Choir',
-                    cid: '0804',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: ['Able to Match Pitch'],
-                    dual: false
-                },
-                {
-                    name: 'Chorale',
-                    cid: '0808',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: ['Concert Choir','Solo Voice'],
-                    dual: false
-                },
-                {
-                    name: 'Solo Voice',
-                    cid: '0800',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1]],
-                    prerequisites: [],
-                    dual: false
-                },
-                {
-                    name: 'Intermediate Voice',
-                    cid: '0801',
-                    grade: [10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1]],
-                    prerequisites: ['Solo Voice'],
-                    dual: false
-                },
-                {
-                    name: 'Advanced Voice',
-                    cid: '0802',
-                    grade: [11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1]],
-                    prerequisites: ['Solo Voice','Intermediate Voice','Voice Teacher Recommendation'],
-                    dual: false
-                },
-                {
-                    name: 'Jazz Choir',
-                    cid: '0812',
-                    grade: [9,10,11,12],
-                    exams: [],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,.5]],
-                    prerequisites: ['Concert Choir','Chorale','Audition'],
-                    dual: false
-                },
-                {
-                    name: 'Select Treble Choir',
-                    cid: '0832',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,.25]],
-                    prerequisites: ['Concert Choir','Chorale'],
-                    dual: false
-                },
-                {
-                    name: 'Music Theory I',
-                    cid: '0846',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: [],
-                    dual: false
-                },
-                {
-                    name: 'AP Music Theory',
-                    cid: '0847',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM,AP_EXAM_ENCOURAGED],
-                    credits: [[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: ['Music Theory I'],
-                    dual: false
-                },
-                {
-                    name: 'Music in Our Lives',
-                    cid: '0827',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: [],
-                    dual: false
-                },
-                {
-                    name: 'Studio Recording and Sound Engineering',
-                    cid: 'NONE',
-                    grade: [11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT,1]],
-                    prerequisites: [],
-                    dual: false
-                },
-                {
-                    name: 'Concert Band',
-                    cid: '0820',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: ['Band Experience'],
-                    dual: false
-                },
-                {
-                    name: 'Wind Ensemble',
-                    cid: '0823',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: ['Audition'],
-                    dual: false
-                },
-                {
-                    name: 'Jazz Ensemble',
-                    cid: '0823',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[GENERAL_MUSIC_CREDIT,.5]],
-                    prerequisites: ['Audition','Concert Band','Wind Ensemble','Philharmonia Orchestra','Symphony Orchestra'],
-                    dual: false
-                },
-                {
-                    name: 'Jazz Democracy',
-                    cid: '0829',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[GENERAL_MUSIC_CREDIT,.5]],
-                    prerequisites: ['Concert Band','Wind Ensemble','Philharmonia Orchestra','Symphony Orchestra'],
-                    dual: false
-                },
-                {
-                    name: 'Philharmonia Orchestra',
-                    cid: '0821',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: ['Orchestra Experience'],
-                    dual: false
-                },
-                {
-                    name: 'Symphony Orchestra',
-                    cid: '0822',
-                    grade: [9,10,11,12],
-                    exams: [LOCAL_EXAM],
-                    credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT,1],[MEETS_COMMENCEMENT_CREDIT,0]],
-                    prerequisites: ['Audition'],
-                    dual: false
-                },
-            ]
+				const ENGLISH_CREDIT = 0;
+				const SOCIAL_STUDY_CREDIT = 1;
+				const MATH_CREDIT = 2;
+				const SCIENCE_CREDIT = 3;
+				const HEALTH_CREDIT = 4;
 
-            google.charts.load('current', {'packages':['sankey']});
-            google.charts.setOnLoadCallback(drawChart);
-            function drawChart() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'From');
-                data.addColumn('string', 'To');
-                data.addColumn('number', 'Weight');
-                var appendData = []
-                for (var i = 0; i < Courses.length; i++) {
-                    if (Courses[i].prerequisites.length == 0) {
-                        let tAppend = [
-                            'Anytime',
-                            Courses[i].name,
-                            1
-                        ]
-                        appendData.push(tAppend)
-                        continue
+				const MEETS_COMMENCEMENT_CREDIT = 5;
+				const MUSIC_SKILLS_DEVELOPMENT_CREDIT = 6;
+				const MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT = 7;
+				const GENERAL_MUSIC_CREDIT = 8;
+
+				const PHYSICAL_EDUCATION_CREDIT = 9;
+				const Courses = [
+					{
+						// MARK: ENGLISH
+						name: "English 9R",
+						cid: "0003",
+						grade: [9],
+						exams: [LOCAL_EXAM],
+						credits: [[ENGLISH_CREDIT, 1]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "English 10R",
+						cid: "0005",
+						grade: [10],
+						exams: [LOCAL_EXAM],
+						credits: [[ENGLISH_CREDIT, 1]],
+						prerequisites: ["English 9R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Pre-AP English 2",
+						cid: "0070",
+						grade: [10],
+						exams: [LOCAL_EXAM],
+						credits: [[ENGLISH_CREDIT, 1]],
+						prerequisites: ["English 9R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "English 11R",
+						cid: "0007",
+						grade: [11],
+						exams: [REGENTS_EXAM],
+						credits: [[ENGLISH_CREDIT, 1]],
+						prerequisites: ["English 10R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "AP English Language & Composition",
+						cid: "0019",
+						grade: [11],
+						exams: [REGENTS_EXAM, AP_EXAM_ENCOURAGED],
+						credits: [[ENGLISH_CREDIT, 1]],
+						prerequisites: ["English 10R", "Pre-AP English 2"],
+						prerequisite_types: [PREREQUISITE_OR,PREREQUISITE_OR],
+						dual: false,
+					},
+					{
+						name: "AP Literature & Composition",
+						cid: "0020",
+						grade: [12],
+						exams: [AP_EXAM_ENCOURAGED],
+						credits: [[ENGLISH_CREDIT, 1]],
+						prerequisites: ["English 11R", "AP English Language & Composition"],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "College Composition (ENG 101)",
+						cid: "0021",
+						grade: [12],
+						exams: [],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 11R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: true,
+					},
+					{
+						name: "Creative Nonfiction H",
+						cid: "0072",
+						grade: [12],
+						exams: [LOCAL_EXAM],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 11R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: true,
+					},
+					{
+						name: "Creative Writing",
+						cid: "0023",
+						grade: [10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 9R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Introduction to Film Studies",
+						cid: "0030",
+						grade: [10, 11, 12],
+						exams: [],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 11R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Music as Literature",
+						cid: "0097",
+						grade: [12],
+						exams: [LOCAL_EXAM],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 11R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Practices of Academic Writing",
+						cid: "0069",
+						grade: [12],
+						exams: [LOCAL_EXAM],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 11R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: true,
+					},
+					{
+						name: "Public Speaking",
+						cid: "0044",
+						grade: [10, 11, 12],
+						exams: ["Final Speech"],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 9R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Science Fiction & Fantasy",
+						cid: "0068",
+						grade: [10, 11, 12],
+						exams: [PROJECT],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 9R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Shakespeare",
+						cid: "0032",
+						grade: [10, 11, 12],
+						exams: [PROJECT],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 9R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Sports Literature",
+						cid: "0034",
+						grade: [10, 11, 12],
+						exams: [PROJECT],
+						credits: [[ENGLISH_CREDIT, 0.5]],
+						prerequisites: ["English 9R"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						// MARK: MATH
+						name: "Algebra I",
+						cid: "0406",
+						grade: [9, 10, 11, 12],
+						exams: [REGENTS_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Geometry",
+						cid: "0411",
+						grade: [9, 10, 11, 12],
+						exams: [REGENTS_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Algebra I"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Math III",
+						cid: "0410",
+						grade: [11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Geometry"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Algebra II Extended",
+						cid: "0442",
+						grade: [11, 12],
+						exams: [REGENTS_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Geometry"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Algebra II",
+						cid: "0440",
+						grade: [9, 10, 11, 12],
+						exams: [REGENTS_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Geometry"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Algebra II Accelerated",
+						cid: "0443",
+						grade: [9, 10, 11, 12],
+						exams: [REGENTS_EXAM_JANUARY],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Geometry"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Pre-Calculus Accelerated",
+						cid: "0414",
+						grade: [9, 10, 11, 12],
+						exams: [REGENTS_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Geometry"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Math & Financial Applications",
+						cid: "0605",
+						grade: [11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Algebra I"],
+						prerequisite_types: [PREREQUISITE_RECOMMENDED],
+						dual: false,
+					},
+					{
+						name: "Pre-Calculus",
+						cid: "0416",
+						grade: [11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Algebra II"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Pre-Calculus Honors",
+						cid: "0417",
+						grade: [10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Algebra II", "Algebra II Accelerated"],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
+						dual: false,
+					},
+					{
+						name: "Calculus H (SUPA)",
+						cid: "0433",
+						grade: [12],
+						exams: [LOCAL_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Pre-Calculus", "Pre-Calculus Honors", "Pre-Calculus Accelerated"],
+						prerequisite_types: [PREREQUISITE_OR,PREREQUISITE_OR,PREREQUISITE_OR],
+						dual: true,
+					},
+					{
+						name: "AP Calculus BC",
+						cid: "0420",
+						grade: [11, 12],
+						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Pre-Calculus", "Pre-Calculus Honors", "Pre-Calculus Accelerated"],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
+						dual: false,
+					},
+					{
+						name: "College Statistics",
+						cid: "0449",
+						grade: [10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["Algebra II", "Algebra II Accelerated"],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
+						dual: true,
+					},
+					{
+						name: "Calculus III",
+						cid: "0432",
+						grade: [12],
+						exams: [LOCAL_EXAM],
+						credits: [[MATH_CREDIT, 1]],
+						prerequisites: ["AP Calculus BC"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: true,
+					},
+					{
+						// MARK: HEALTH
+						name: "Health I",
+						cid: "0902",
+						grade: [9, 10, 11, 12],
+						exams: [],
+						credits: [[HEALTH_CREDIT, 0.5]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Health II",
+						cid: "0903",
+						grade: [11, 12],
+						exams: [],
+						credits: [[HEALTH_CREDIT, 0.5]],
+						prerequisites: ["Health I"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						name: "Reconnecting Youth",
+						cid: "0903",
+						grade: [9, 10, 11, 12],
+						exams: [],
+						credits: [[HEALTH_CREDIT, 0.5]],
+						prerequisites: ["Counselor Recommendation"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: false,
+					},
+					{
+						// MARK: MUSIC
+						name: "Concert Choir",
+						cid: "0804",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: ["Able to Match Pitch"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Chorale",
+						cid: "0808",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: ["Concert Choir", "Solo Voice"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Solo Voice",
+						cid: "0800",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Intermediate Voice",
+						cid: "0801",
+						grade: [10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
+						prerequisites: ["Solo Voice"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Advanced Voice",
+						cid: "0802",
+						grade: [11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
+						prerequisites: ["Solo Voice", "Intermediate Voice", "Voice Teacher Recommendation"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Jazz Choir",
+						cid: "0812",
+						grade: [9, 10, 11, 12],
+						exams: [],
+						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 0.5]],
+						prerequisites: ["Concert Choir", "Chorale", "Audition"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Select Treble Choir",
+						cid: "0832",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 0.25]],
+						prerequisites: ["Concert Choir", "Chorale"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Music Theory I",
+						cid: "0846",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "AP Music Theory",
+						cid: "0847",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
+						credits: [
+							[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: ["Music Theory I"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Music in Our Lives",
+						cid: "0827",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Studio Recording and Sound Engineering",
+						cid: "NONE",
+						grade: [11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Concert Band",
+						cid: "0820",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: ["Band Experience"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Wind Ensemble",
+						cid: "0823",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: ["Audition"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Jazz Ensemble",
+						cid: "0823",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[GENERAL_MUSIC_CREDIT, 0.5]],
+						prerequisites: ["Audition", "Concert Band", "Wind Ensemble", "Philharmonia Orchestra", "Symphony Orchestra"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Jazz Democracy",
+						cid: "0829",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [[GENERAL_MUSIC_CREDIT, 0.5]],
+						prerequisites: ["Concert Band", "Wind Ensemble", "Philharmonia Orchestra", "Symphony Orchestra"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Philharmonia Orchestra",
+						cid: "0821",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: ["Orchestra Experience"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Symphony Orchestra",
+						cid: "0822",
+						grade: [9, 10, 11, 12],
+						exams: [LOCAL_EXAM],
+						credits: [
+							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
+							[MEETS_COMMENCEMENT_CREDIT, 0],
+						],
+						prerequisites: ["Audition"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Physical Education 9",
+						cid: "0900",
+						grade: [9],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [""],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Physical Education 10",
+						cid: "0901",
+						grade: [10],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: ["Physical Education 9"],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Unified PE",
+						cid: "0983",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: ["Physical Education 9"],
+						prerequisite_types: [],
+						dual: false,
+					},
+				];
+				google.charts.load("current", { packages: ["sankey"] });
+				google.charts.setOnLoadCallback(drawChart);
+				function drawChart() {
+					var data = new google.visualization.DataTable();
+					data.addColumn("string", "From");
+					data.addColumn("string", "To");
+					data.addColumn("number", "Requirement Type");
+					var appendData = [];
+                    try {
+                        for (var i = 0; i < Courses.length; i++) {
+                            if (Courses[i].name === undefined) {
+                                throw "Name Invalid - Course names must be provided, if not named leave as <span>name: \"\"</span><br>Course ID: "+Courses[i].cid+"<br>Course # (Index): "+(i+1)
+                            }
+                            if (Courses[i].cid === undefined || Courses[i].cid === "") {
+                                throw "Course ID Invalid - Course ids must be provided, if it doesn't have one leave as <span>cid: \"NONE\"</span><br>Course Name: "+Courses[i].name+"<br>Course # (Index): "+(i+1)
+                            }
+                            if (Courses[i].grade === undefined || Courses[i].grade.length === 0) {
+                                throw "Grades Invalid - Grade levels must be declared, if it doesn't have specific ones leave as <span>grades: [9,10,11,12]</span><br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid
+                            }
+                            if (Courses[i].exams === undefined || Courses[i].cid === "") {
+                                throw "Exams Invalid - Exams must be declared, if it doesn't have any leave as <span>exams: []</span><br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid
+                            }
+                            if (Courses[i].prerequisites.length == 0) {
+                                let tAppend = ["Anytime", Courses[i].name, PREREQUISITE_AND];
+                                appendData.push(tAppend);
+                                continue;
+                            }
+                            for (var pri = 0; pri < Courses[i].prerequisites.length; pri++) {
+                                if (Courses[i].prerequisite_types[pri] === NaN || Courses[i].prerequisite_types[pri] > 2 || Courses[i].prerequisite_types[pri] < 0) {
+                                    throw "Prerequisite Data Invalid<br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid+"<br>Prerequisite #: "+(pri+1)
+                                } else if (Courses[i].prerequisite_types[pri] === undefined) {
+                                    throw "Prerequisite Data Invalid - You must define a type for each prerequisite<br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid+"<br>Prerequisite: #"+(pri+1)
+                                }
+                                let tAppend = [Courses[i].prerequisites[pri], Courses[i].name, Courses[i].prerequisite_types[pri]];
+                                appendData.push(tAppend);
+                            }
+                        }
+                    } catch (e) {
+                        presentError(e,e)
                     }
-                    for (var pri = 0; pri < Courses[i].prerequisites.length; pri++) {
-                        let tAppend = [
-                            Courses[i].prerequisites[pri],
-                            Courses[i].name,
-                            1
-                        ]
-                        appendData.push(tAppend)
-                    }
-                }
-                data.addRows(appendData);
+					data.addRows(appendData);
 
-                // Sets chart options.
-                var options = {
-                    height: innerHeight*2 - 60,
-                    width: innerWidth*2 - 60,
-                    sankey: { node: { nodePadding: 30 } },
-                };
+					// Sets chart options.
+					var options = {
+						height: innerHeight * 2 - 60,
+						width: innerWidth * 2 - 60,
+						sankey: { node: { nodePadding: 30 } },
+					};
 
-                // Instantiates and draws our chart, passing in some options.
-                var chart = new google.visualization.Sankey(document.getElementById('sankey_basic'));
-                chart.draw(data, options);
-            }
-        } catch (e) {
-            alert(e)
-        }
-        </script>
-        <style>
-            body {
-                margin: 0px;
-                height: 100vh;
-                width: 100vw;
-                overflow: hidden;
-            }
-            #sankey_basic {
-                padding: 15px;
-                margin: 0px;
-                height: calc(200vh);
-                width: calc(200vw);
-                transform: scale(calc(1 / var(--zoom,2.5)));
-                overflow: visible;
-            }
-            #scrollarea {
-                margin: 15px;
-                height: calc(100vh - 30px);
-                width: calc(100vw - 30px);
-                overflow: scroll;
+					// Instantiates and draws our chart, passing in some options.
+					var chart = new google.visualization.Sankey(document.getElementById("sankey_basic"));
+					chart.draw(data, options);
+				}
+			} catch (e) {
+				presentError("Unknown Error - Contact Creator! <br><br><pre>Name: "+e.name+"<br>Message: "+e.message+"<br>Stack: "+e.stack+"</pre>", e);
+			}
+		</script>
+		<style>
+			body {
+				margin: 0px;
+				height: 100vh;
+				width: 100vw;
+				overflow: hidden;
+			}
+			#sankey_basic {
+				padding: 15px;
+				margin: 0px;
+				height: calc(200vh);
+				width: calc(200vw);
+				transform: scale(calc(1 / var(--zoom, 1)));
+				overflow: visible;
+			}
+			#scrollarea {
+				margin: 15px;
+				height: calc(100vh - 30px);
+				width: calc(100vw - 30px);
+				overflow: scroll;
+				border: #cccccc solid 1px;
+				border-radius: 10px;
+				box-shadow: #444444 0px 0px 20px 0px;
+				-ms-overflow-style: none; /* IE and Edge */
+				scrollbar-width: none;
+			}
+			#scrollarea::-webkit-scrollbar {
+				display: none;
+			}
+            #errorbox {
+                position: absolute;
+                top: calc(50% - 50px);
+                left: calc(50% - 50px);
+                transform: translate(-50%, -50%);
+                padding: 20px 50px;
+                margin: 50px 50px;
                 border: #cccccc solid 1px;
-                border-radius: 20px;
-                box-shadow: #444444 0px 0px 20px 0px;
-                -ms-overflow-style: none;  /* IE and Edge */
-                scrollbar-width: none;
+				border-radius: 10px;
+				box-shadow: #de6c6c 0px 0px 20px 0px;
+                display: grid;
+                grid-template-columns: "a";
+                align-items: center;
+                align-content: center;
+                text-align: center;
+                justify-content: center;
+                justify-items: center;
             }
-            #scrollarea::-webkit-scrollbar {
-                display: none;
+            #errorbox > h4 {
+                margin: 5px;
             }
-        </style>
-    </head>
-    <body>
-        <div id="scrollarea" style="--scale: 5px;">    
-            <div id="sankey_basic"></div>
+            pre {
+                background-color: #0f0f0f;
+                border: #bababa solid 2px;
+                border-radius: 10px;
+                text-align: left;
+                color: #FFFFFF;
+                padding: 10px 15px;
+                font-family: monospace;
+                box-shadow: #000000 0px 0px 20px 5px;
+            }
+            #errorbox > p > span {
+                background-color: #191919;
+                border: #bababa solid 2px;
+                border-radius: 10px;
+                text-align: center;
+                color: #FFFFFF;
+                padding: 5px;
+                font-family: monospace;
+            }
+		</style>
+	</head>
+	<body>
+        <div id="errorbox" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" fill="#ff0000"/>
+            </svg>
+            <h4>Error</h4>
+            <p id="errormessage"></p>
         </div>
-    </body>
+		<div id="scrollarea" style="--scale: 5px">
+			<div id="sankey_basic"></div>
+		</div>
+	</body>
 </html>
