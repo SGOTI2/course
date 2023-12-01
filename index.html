@@ -591,6 +591,156 @@
 						prerequisite_types: [],
 						dual: false,
 					},
+					{
+						name: "Yoga",
+						cid: "0988",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Adventure Learning",
+						cid: "0972",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Dance / Personal Defense",
+						cid: "0955",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Fitness for Life",
+						cid: "0955",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Golf and Racquet",
+						cid: "0953",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Outdoor Experience",
+						cid: "0974",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Sport Education A",
+						cid: "0964",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Sport Education B",
+						cid: "0966",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Team Games A",
+						cid: "0981",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "Team Games B",
+						cid: "0981",
+						grade: [11, 12],
+						exams: [],
+						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{ // MARK: Science
+						name: "Physical Setting: Earth Science Regents",
+						cid: "0300",
+						grade: [9,10,11,12],
+						exams: [REGENTS_EXAM],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: [],
+						prerequisite_types: [],
+						dual: false,
+					},
+					{
+						name: "The Living Environment Regents",
+						cid: "0300",
+						grade: [9,10,11,12],
+						exams: [REGENTS_EXAM],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: ["Physical Setting: Earth Science Regents"],
+						prerequisite_types: [PREREQUISITE_RECOMMENDED],
+						dual: false,
+					},
+					{
+						name: "Physical Setting: Chemistry Regents",
+						cid: "0311",
+						grade: [10,11,12],
+						exams: [REGENTS_EXAM],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: ["Algebra I", "Physical Setting: Earth Science Regents"],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_RECOMMENDED],
+						dual: false,
+					},
+					{
+						name: "Physical Setting: Physics with Optics",
+						cid: "0319",
+						grade: [10,11,12],
+						exams: [REGENTS_EXAM],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: ["Algebra II"],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
+						dual: true,
+					},
+					{
+						name: "AP Environmental Science",
+						cid: "0307",
+						grade: [10,11,12],
+						exams: [REGENTS_EXAM],
+						credits: [[SCIENCE_CREDIT, 1]],
+						prerequisites: ["The Living Environment Regents", "Physical Setting: Earth Science Regents","Physical Setting: Physics with Optics","Physical Setting: Chemistry Regents"],
+						prerequisite_types: [PREREQUISITE_REQUIRED,PREREQUISITE_OR,PREREQUISITE_OR,PREREQUISITE_OR],
+						dual: false,
+					},
 				];
 				google.charts.load("current", { packages: ["sankey"] });
 				google.charts.setOnLoadCallback(drawChart);
@@ -615,10 +765,11 @@
                                 throw "Exams Invalid - Exams must be declared, if it doesn't have any leave as <span>exams: []</span><br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid
                             }
                             if (Courses[i].prerequisites.length == 0) {
-								let llis = Courses[i].grade.length >= 2 ? "Grades " : "Grade "
-								for (var i2 = 0; i2 < Courses[i2].grade.length; i2++) {
-									llis += String(Courses[i2].grade[i2]+"th"+(i2 === Courses[i2].grade.length ? "" : " & "))
+								let llis = ""
+								for (var i2 = 0; i2 < Courses[i].grade.length; i2++) {
+									llis += String(Courses[i].grade[i2]+"th"+(i2 === (Courses[i].grade.length - 1)  ? " " : " & "))
 								}
+								llis += Courses[i].grade.length >= 2 ? "Grades " : "Grade "
                                 let tAppend = [llis, Courses[i].name, PREREQUISITE_AND];
                                 appendData.push(tAppend);
                                 continue;
