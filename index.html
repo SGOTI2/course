@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -639,9 +640,18 @@
 
 					// Sets chart options.
 					var options = {
-						height: document.getElementById("sankey_basic").clientHeight,
-						width: document.getElementById("sankey_basic").clientWidth,
-						sankey: { node: { nodePadding: 30 } },
+						sankey: { 
+							node: { 
+								nodePadding: 10
+							},
+							iterations: 100
+					    },
+						explorer: {
+							axis: 'horizontal',
+							keepInBounds: true,
+							maxZoomIn: 4.0
+						}
+
 					};
 
 					// Instantiates and draws our chart, passing in some options.
@@ -661,21 +671,22 @@
 			}
 			#sankey_basic {
 				padding: 15px;
-				margin: 0px;
-				height: 2000px;
-				width: 4000px;
-				overflow: visible;
+				height: 200%;
+				width: 200%;
+				overflow: hidden;
 				position: absolute;
 				top: 50%;
 				left: 50%;
-				transform: translate(-50%, -50%) scale(var(--zoom, 2));
+				translate: -50% -50%;
+				transform: scale(0.5);
+				
 			}
 			#scrollarea {
 				position: absolute;
 				margin: 15px;
 				height: calc(100vh - 30px);
 				width: calc(100vw - 30px);
-				overflow: scroll;
+				overflow: hidden;
 				border: #cccccc solid 1px;
 				border-radius: 10px;
 				box-shadow: #444444 0px 0px 20px 0px;
