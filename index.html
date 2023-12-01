@@ -2,12 +2,12 @@
 	<head>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript">
-            /*Ignore This Line*/var l=false;function presentError(m,oe){if(!l){window.onload=()=>{l=true;presentError(m);};console.log("LNF");return;}document.getElementById("errormessage").innerHTML=m;document.getElementById("errorbox").removeAttribute("hidden");throw oe;};window.onload=()=>{l=true;}
+            /*Ignore This Line (Error Handling)*/var l=false;function presentError(m,oe,t=''){if(!l){window.onload=()=>{l=true;presentError(m,oe,t);};return;}document.getElementById("errormessage").innerHTML=m;document.getElementById("errortype").innerHTML=t;document.getElementById("errorbox").removeAttribute("style");throw oe;};window.onload=()=>{l=true;}
 			try {
-				const PREREQUISITE_AND = 0;
-                const PREREQUISITE_REQUIRED = 0;
-				const PREREQUISITE_OR = 1;
-				const PREREQUISITE_RECOMMENDED = 2;
+				const PREREQUISITE_AND = 1;
+                const PREREQUISITE_REQUIRED = 1;
+				const PREREQUISITE_OR = 2;
+				const PREREQUISITE_RECOMMENDED = 3;
 
 				const LOCAL_EXAM = 0;
 				const REGENTS_EXAM = 1;
@@ -372,8 +372,8 @@
 							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
 							[MEETS_COMMENCEMENT_CREDIT, 0],
 						],
-						prerequisites: ["Able to Match Pitch"],
-						prerequisite_types: [],
+						prerequisites: ["Choral Experience", "Able to Match Pitch"],
+						prerequisite_types: [PREREQUISITE_RECOMMENDED, PREREQUISITE_REQUIRED],
 						dual: false,
 					},
 					{
@@ -386,7 +386,7 @@
 							[MEETS_COMMENCEMENT_CREDIT, 0],
 						],
 						prerequisites: ["Concert Choir", "Solo Voice"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
 						dual: false,
 					},
 					{
@@ -406,7 +406,7 @@
 						exams: [LOCAL_EXAM],
 						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
 						prerequisites: ["Solo Voice"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
 						dual: false,
 					},
 					{
@@ -415,8 +415,8 @@
 						grade: [11, 12],
 						exams: [LOCAL_EXAM],
 						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
-						prerequisites: ["Solo Voice", "Intermediate Voice", "Voice Teacher Recommendation"],
-						prerequisite_types: [],
+						prerequisites: ["Solo Voice", "Intermediate Voice", "Teacher Recommendation"],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED, PREREQUISITE_OR],
 						dual: false,
 					},
 					{
@@ -426,7 +426,7 @@
 						exams: [],
 						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 0.5]],
 						prerequisites: ["Concert Choir", "Chorale", "Audition"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_REQUIRED],
 						dual: false,
 					},
 					{
@@ -435,8 +435,8 @@
 						grade: [9, 10, 11, 12],
 						exams: [LOCAL_EXAM],
 						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 0.25]],
-						prerequisites: ["Concert Choir", "Chorale"],
-						prerequisite_types: [],
+						prerequisites: ["Concert Choir", "Chorale", "Audition"],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_REQUIRED],
 						dual: false,
 					},
 					{
@@ -461,8 +461,8 @@
 							[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1],
 							[MEETS_COMMENCEMENT_CREDIT, 0],
 						],
-						prerequisites: ["Music Theory I"],
-						prerequisite_types: [],
+						prerequisites: ["Music Theory I", "Teacher Recommendation"],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
 						dual: false,
 					},
 					{
@@ -498,7 +498,7 @@
 							[MEETS_COMMENCEMENT_CREDIT, 0],
 						],
 						prerequisites: ["Band Experience"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_RECOMMENDED],
 						dual: false,
 					},
 					{
@@ -511,7 +511,7 @@
 							[MEETS_COMMENCEMENT_CREDIT, 0],
 						],
 						prerequisites: ["Audition"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
 						dual: false,
 					},
 					{
@@ -521,7 +521,7 @@
 						exams: [LOCAL_EXAM],
 						credits: [[GENERAL_MUSIC_CREDIT, 0.5]],
 						prerequisites: ["Audition", "Concert Band", "Wind Ensemble", "Philharmonia Orchestra", "Symphony Orchestra"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
 						dual: false,
 					},
 					{
@@ -531,7 +531,7 @@
 						exams: [LOCAL_EXAM],
 						credits: [[GENERAL_MUSIC_CREDIT, 0.5]],
 						prerequisites: ["Concert Band", "Wind Ensemble", "Philharmonia Orchestra", "Symphony Orchestra"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
 						dual: false,
 					},
 					{
@@ -544,7 +544,7 @@
 							[MEETS_COMMENCEMENT_CREDIT, 0],
 						],
 						prerequisites: ["Orchestra Experience"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_RECOMMENDED],
 						dual: false,
 					},
 					{
@@ -557,16 +557,16 @@
 							[MEETS_COMMENCEMENT_CREDIT, 0],
 						],
 						prerequisites: ["Audition"],
-						prerequisite_types: [],
+						prerequisite_types: [PREREQUISITE_REQUIRED],
 						dual: false,
 					},
-					{
+					{ // MARK: Physical Education
 						name: "Physical Education 9",
 						cid: "0900",
 						grade: [9],
 						exams: [],
 						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [""],
+						prerequisites: [],
 						prerequisite_types: [],
 						dual: false,
 					},
@@ -576,7 +576,7 @@
 						grade: [10],
 						exams: [],
 						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: ["Physical Education 9"],
+						prerequisites: [],
 						prerequisite_types: [],
 						dual: false,
 					},
@@ -586,7 +586,7 @@
 						grade: [11, 12],
 						exams: [],
 						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: ["Physical Education 9"],
+						prerequisites: [],
 						prerequisite_types: [],
 						dual: false,
 					},
@@ -614,12 +614,16 @@
                                 throw "Exams Invalid - Exams must be declared, if it doesn't have any leave as <span>exams: []</span><br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid
                             }
                             if (Courses[i].prerequisites.length == 0) {
-                                let tAppend = ["Anytime", Courses[i].name, PREREQUISITE_AND];
+								let llis = Courses[i].grade.length >= 2 ? "Grades " : "Grade "
+								for (var i2 = 0; i2 < Courses[i2].grade.length; i2++) {
+									llis += String(Courses[i2].grade[i2]+"th"+(i2 === Courses[i2].grade.length ? "" : " & "))
+								}
+                                let tAppend = [llis, Courses[i].name, PREREQUISITE_AND];
                                 appendData.push(tAppend);
                                 continue;
                             }
                             for (var pri = 0; pri < Courses[i].prerequisites.length; pri++) {
-                                if (Courses[i].prerequisite_types[pri] === NaN || Courses[i].prerequisite_types[pri] > 2 || Courses[i].prerequisite_types[pri] < 0) {
+                                if (Courses[i].prerequisite_types[pri] === NaN || Courses[i].prerequisite_types[pri] > 3 || Courses[i].prerequisite_types[pri] < 1) {
                                     throw "Prerequisite Data Invalid<br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid+"<br>Prerequisite #: "+(pri+1)
                                 } else if (Courses[i].prerequisite_types[pri] === undefined) {
                                     throw "Prerequisite Data Invalid - You must define a type for each prerequisite<br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid+"<br>Prerequisite: #"+(pri+1)
@@ -628,15 +632,15 @@
                                 appendData.push(tAppend);
                             }
                         }
-                    } catch (e) {
-                        presentError(e,e)
+                    } catch (e2) {
+                        presentError(e2,e2,' - Data Parsing')
                     }
 					data.addRows(appendData);
 
 					// Sets chart options.
 					var options = {
-						height: innerHeight * 2 - 60,
-						width: innerWidth * 2 - 60,
+						height: document.getElementById("sankey_basic").clientHeight,
+						width: document.getElementById("sankey_basic").clientWidth,
 						sankey: { node: { nodePadding: 30 } },
 					};
 
@@ -658,12 +662,16 @@
 			#sankey_basic {
 				padding: 15px;
 				margin: 0px;
-				height: calc(200vh);
-				width: calc(200vw);
-				transform: scale(calc(1 / var(--zoom, 1)));
+				height: 2000px;
+				width: 4000px;
 				overflow: visible;
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%) scale(var(--zoom, 2));
 			}
 			#scrollarea {
+				position: absolute;
 				margin: 15px;
 				height: calc(100vh - 30px);
 				width: calc(100vw - 30px);
@@ -694,6 +702,9 @@
                 text-align: center;
                 justify-content: center;
                 justify-items: center;
+				z-index: 100000;
+				background: #ffffff11;
+				backdrop-filter: blur(20px);
             }
             #errorbox > h4 {
                 margin: 5px;
@@ -720,14 +731,14 @@
 		</style>
 	</head>
 	<body>
-        <div id="errorbox" hidden>
+        <div id="errorbox" style="display: none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
                 <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" fill="#ff0000"/>
             </svg>
-            <h4>Error</h4>
+            <h4>Error<span id="errortype"></span></h4>
             <p id="errormessage"></p>
         </div>
-		<div id="scrollarea" style="--scale: 5px">
+		<div id="scrollarea" style="--zoom: 0.3">
 			<div id="sankey_basic"></div>
 		</div>
 	</body>
