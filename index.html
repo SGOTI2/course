@@ -355,7 +355,7 @@
 					},
 					{
 						name: "Reconnecting Youth",
-						cid: "0903",
+						cid: "0906",
 						grade: [9, 10, 11, 12],
 						exams: [],
 						credits: [[HEALTH_CREDIT, 0.5]],
@@ -772,28 +772,137 @@
 						dual: false,
 					},
 				];
+				const CHECKMARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>'
+				var takenCourses = []
+				function convertCreditToText(credit) {
+					let result = "Unknown"
+					switch (credit) {
+						case MATH_CREDIT:
+							result = "Math"
+							break;
+						case HEALTH_CREDIT:
+							result = "Health"
+							break;
+						case ENGLISH_CREDIT:
+							result = "English"
+							break;
+						case SCIENCE_CREDIT:
+							result = "Science"
+							break;
+						case SOCIAL_STUDY_CREDIT:
+							result = "Social Studies"
+							break;
+						case GENERAL_MUSIC_CREDIT:
+							result = "Music"
+							break;
+						case PHYSICAL_EDUCATION_CREDIT:
+							result = "P.E."
+							break;
+						case MUSIC_SKILLS_DEVELOPMENT_CREDIT:
+							result = "Music (S Dev.)"
+							break;
+						case MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT:
+							result = "Music (K/A Dev.)"
+							break;
+						case MEETS_COMMENCEMENT_CREDIT:
+							result = "Commencement"
+							break;
+						default:
+							break;
+					}
+					return result
+				}
 				function searchCourses(name="", cid="") {
-					if (name != "") {
-						let objs = []
-						for (let i = 0; i < Courses.length; i++) {
-							if (Courses[i].name.toLowerCase().search(name) != -1) {
-								objs.push(Courses[i])
+					let objs = []
+					for (let i = 0; i < Courses.length; i++) {
+						if ((Courses[i].name.toLowerCase().search(name) != -1 && name != "") || (Courses[i].cid.toLowerCase().search(cid) != -1 && cid != "")) {
+							objs.push(Courses[i])
+						}
+					}
+					return objs;
+				}
+				function PropagateTakenCourseSearchResults() {
+					document.getElementById("addcompletesugglist").innerHTML = ""
+					let results = searchCourses(document.getElementById("addcompletename").value,document.getElementById("addcompletecid").value)
+					var frag = document.createDocumentFragment()
+					for (var i = 0; i < results.length; i++) {
+						let creds = ""
+						for (var ci = 0; ci < results[i].credits.length; ci++) {
+							let cctt = convertCreditToText(results[i].credits[ci][0])
+							if (cctt === "Commencement") {
+
+							} else {
+								creds += `<span>⋅</span><span>${results[i].credits[ci][1]} ${cctt} Credit</span>`
 							}
 						}
-						return objs;
+						let tmp = `
+							<h5>${results[i].name}</h5>
+							<div>
+								${takenCourses.findIndex((e) => {return e === results[i];}) === -1 ? "" : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>'}
+								<div class="cid">${results[i].cid}</div>
+								${creds}
+							</div>`
+						let temp = document.createElement('li');
+						temp.innerHTML = tmp;
+						temp.id = "atcid"+Courses.findIndex((e) => {return e === results[i];})
+						temp.addEventListener("click", (e) => {
+							let cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])]
+							if (takenCourses.findIndex((e) => {return e === cc;}) === -1) {
+								takenCourses.push(cc)
+								e.currentTarget.lastChild.innerHTML = CHECKMARK_SVG + e.currentTarget.lastChild.innerHTML
+							} else {
+								takenCourses.splice(takenCourses.findIndex((e) => {return e === cc;}), 1)
+								e.currentTarget.lastChild.firstChild.remove()
+							}
+							PropagateTakenCourses()
+						})
+						frag.appendChild(temp)
+					}
+					document.getElementById("addcompletesugglist").appendChild(frag)
+					if (results.length === 0) {
+						document.getElementById("addcompletesugglist").innerHTML = "<p>No Results</p>"
+					}
+				}
+				function PropagateTakenCourses() {
+					document.getElementById("takenCourses").innerHTML = ""
+					var frag = document.createDocumentFragment()
+					for (var i = 0; i < takenCourses.length; i++) {
+						let creds = ""
+						for (var ci = 0; ci < takenCourses[i].credits.length; ci++) {
+							let cctt = convertCreditToText(takenCourses[i].credits[ci][0])
+							if (cctt === "Commencement") {
+
+							} else {
+								creds += `<span>⋅</span><span>${takenCourses[i].credits[ci][1]} ${cctt} Credit</span>`
+							}
+						}
+						let tmp = `
+							<h5>${takenCourses[i].name}</h5>
+							<div>
+								<div class="cid">${takenCourses[i].cid}</div>
+								${creds}
+							</div>`
+						let temp = document.createElement('li');
+						temp.innerHTML = tmp;
+						frag.appendChild(temp)
+					}
+					document.getElementById("takenCourses").appendChild(frag)
+					if (takenCourses.length === 0) {
+						document.getElementById("takenCourses").innerHTML = "<p>No Results</p>"
 					}
 				}
 				function loadCall() {
 					document.getElementById("addcomplete").addEventListener("click",() => {
-						document.getElementById("addcompletebox").removeAttribute("style")
+						document.getElementById("addcompletebox").style.display = "flex"
+						PropagateTakenCourseSearchResults()
 					})
-					document.getElementById("addcompletename").addEventListener("change", () => {
-						let results = searchCourses(document.getElementById("addcompletename").value)
-						for (var i = 0; i < results.length; i++) {
-							document.getElementById("addcompletesugglist").innerHTML += "<li>"+results[i].name+"</li>"
-						}
+					document.getElementById("addcompleteclose").addEventListener("click",() => {
+						document.getElementById("addcompletebox").style.display = "none"
 					})
+					document.getElementById("addcompletename").addEventListener("keyup", PropagateTakenCourseSearchResults)
+					document.getElementById("addcompletecid").addEventListener("keyup", PropagateTakenCourseSearchResults)
 				}
+				/*
 				google.charts.load("current", { packages: ["sankey"] });
 				google.charts.setOnLoadCallback(drawChart);
 				function drawChart() {
@@ -861,17 +970,19 @@
 					var chart = new google.visualization.Sankey(document.getElementById("sankey_basic"));
 					chart.draw(data, options);
 				}
+				*/
 			} catch (e) {
 				presentError("Unknown Error - Contact Creator! <br><br><pre>Name: "+e.name+"<br>Message: "+e.message+"<br>Stack: "+e.stack+"</pre>", e);
 			}
 		</script>
 		<style>
 			body {
-				margin: 0px;
+				margin: 0px 20px;
 				overflow-x: hidden;
 				overflow-y: scroll;
 				font-family: Verdana, Geneva, Tahoma, sans-serif;
 			}
+			/*
 			#sankey_basic {
 				padding: 15px;
 				height: 200%;
@@ -882,7 +993,6 @@
 				left: 50%;
 				translate: -50% -50%;
 				transform: scale(0.5);
-				
 			}
 			#scrollarea {
 				position: relative;
@@ -900,6 +1010,7 @@
 			#scrollarea::-webkit-scrollbar {
 				display: none;
 			}
+			*/
             #errorbox {
                 position: absolute;
                 top: calc(50% - 50px);
@@ -920,6 +1031,7 @@
 				z-index: 100000;
 				background: #ffffff11;
 				backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
             }
             #errorbox > h4 {
                 margin: 5px;
@@ -943,10 +1055,6 @@
                 padding: 5px;
                 font-family: monospace;
             }
-			#header {
-				display: flex;
-				margin: 10px 40px;
-			}
 			#addcompletebox {
 				position: absolute;
                 top: calc(50% - 50px);
@@ -960,6 +1068,7 @@
 				z-index: 10000;
 				background: #ffffff11;
 				backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
 				display: flex;
 				gap: 20px;
 			}
@@ -968,7 +1077,7 @@
 				border-radius: 10px;
 				background-color: #ffffff;
 				padding: 10px 15px;
-				box-shadow: #cccccc 0px 0px 10px 0px;
+				box-shadow: #bbbbbb 0px 0px 10px 0px;
 				transition: box-shadow 0.5s;
 			}
 			button:hover {
@@ -1003,6 +1112,9 @@
 				box-shadow: #cccccc 0px 0px 10px 0px;
 				width: 300px;
 			}
+			#addcompletesugg > div {
+				width: 205px;
+			}
 			#addcompletesugg > h4 {
 				margin: 0px;
 				margin-left: -10px;
@@ -1011,11 +1123,90 @@
 				width: calc(100% + 10px);
 				border-bottom: #adadad solid 1px;
 			}
-			#addcompletesugglist {
+			#addcompletesugglist, ul {
 				overflow-y: scroll;
 				overflow-x: visible;
 				min-height: 200px;
 				max-height: 70vh;
+				list-style-type: none;
+  				padding: 0;
+  				margin: 0;
+				padding-top: 10px;
+			}
+			ul > li {
+				border: #cccccc solid 1px;
+				border-radius: 5px;
+				margin-bottom: 10px;
+				padding: 5px;
+				cursor: pointer;
+				transition: box-shadow 0.25s;
+			}
+			ul > li:hover {
+				border-color: #0084ff;
+				background-color: #0084ff0a;
+				box-shadow: #cccccc 0px 0px 10px 0px;
+				backdrop-filter: blur(5px);
+				-webkit-backdrop-filter: blur(5px);
+			}
+			ul > li > h5 {
+				margin: 0px;
+				font-size: 15px;
+			}
+			ul > li > div {
+				display: flex;
+				gap: 5px;
+				color: #575757;
+				font-size: 12.5px;
+				overflow-x: scroll;
+				white-space: nowrap;
+				-ms-overflow-style: none;
+				scrollbar-width: none;
+			}
+			ul > li > div::-webkit-scrollbar {
+				display: none;
+			}
+			ul > li > div > svg {
+				fill: #ffffff;
+				background-color: rgb(0, 208, 0);
+				border-radius: 50%;
+				width: 16px;
+				height: 16px;
+				padding: 1px;
+			}
+			#addcompletesugglist > p, #takenCourses > p {
+				margin: 10px 0px;
+				text-align: center;
+				color: #727272;
+				font-style: oblique;
+			}
+			#addcompleteclose {
+				position: absolute;
+				bottom: 30px;
+				width: 205px;
+			}
+			#addcomplete {
+				padding: 5px;
+				background-color: #0084ff;
+				width: 30px;
+				height: 30px;
+				color: #ffffff;
+				border: none;
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				align-content: center;
+				justify-content: center;
+			}
+			.header {
+				display: flex;
+				gap: 20px;
+				align-items: center;
+				align-content: center;
+				justify-content: left;
+			}
+			#takenCourses > p {
+				text-align:left;
+				font-size: 12.5px;
 			}
 		</style>
 	</head>
@@ -1027,12 +1218,11 @@
 				<input type="text" name="addcompletename" id="addcompletename" placeholder="Start Typing...">
 				<label for="addcompletecid">Course ID:</label>
 				<input type="text" name="addcompletecid" id="addcompletecid" placeholder="Start Typing...">
+				<button id="addcompleteclose">Close</button>
 			</div>
 			<div id="addcompletesugg">
 				<h4>Courses</h4>
-				<p>Start Typing...</p>
 				<ul id="addcompletesugglist">
-
 				</ul>
 			</div>
 		</div>
@@ -1043,11 +1233,23 @@
             <h4>Error<span id="errortype"></span></h4>
             <p id="errormessage"></p>
         </div>
-		<div id="header">
-			<button id="addcomplete">Add Complete</button>
+		<div>
+			<div class="header">
+				<h2>Taken Courses</h2>
+				<button id="addcomplete">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+						<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+				  	</svg>
+				</button>
+			</div>
+			<ul id="takenCourses">
+				<p>Click + to add a Course</p>
+			</ul>
 		</div>
-		<div id="scrollarea" style="--zoom: 0.3">
-			<div id="sankey_basic"></div>
-		</div>
+		<!--
+			<div id="scrollarea" style="--zoom: 0.3">
+				<div id="sankey_basic"></div>
+			</div>
+		-->
 	</body>
 </html>
