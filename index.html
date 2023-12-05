@@ -772,8 +772,12 @@
 						dual: false,
 					},
 				];
-				const CHECKMARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>'
+				const CHECKMARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="16" height="16" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>'
+				const DIVIDER_SVG = '<svg preserveAspectRatio="none" width="4" height="4" class="div" fill="currentColor" viewBox="0 0 4 4"><circle></circle></svg>'
 				var takenCourses = []
+				function conlog(msg) {
+					document.body.innerHTML += msg
+				}
 				function convertCreditToText(credit) {
 					let result = "Unknown"
 					switch (credit) {
@@ -812,14 +816,127 @@
 					}
 					return result
 				}
+				function convertExamToText(exam) {
+					let result = ""
+					switch (exam) {
+						case LOCAL_EXAM:
+							result = "Local"
+							break;
+						case REGENTS_EXAM:
+							result = "Regents"
+							break;
+						case REGENTS_EXAM_JANUARY:
+							result = "January Regents"
+							break;
+						case AP_EXAM:
+							result = "AP"
+							break;
+						case AP_EXAM_ENCOURAGED:
+							result = "Encouraged AP"
+							break;
+						default:
+							break;
+					}
+					return result
+				}
+				function convertPrerequisiteTypeToText(pretype) {
+					let result = ""
+					switch (pretype) {
+						case PREREQUISITE_REQUIRED:
+							result = "Required"
+							break;
+						case PREREQUISITE_OR:
+							result = "Or"
+							break;
+						default:
+							break;
+					}
+					return result;
+				}
 				function searchCourses(name="", cid="") {
 					let objs = []
 					for (let i = 0; i < Courses.length; i++) {
-						if ((Courses[i].name.toLowerCase().search(name) != -1 && name != "") || (Courses[i].cid.toLowerCase().search(cid) != -1 && cid != "")) {
+						if ((Courses[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") || (Courses[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "")) {
 							objs.push(Courses[i])
 						}
 					}
 					return objs;
+				}
+				function preSearch(inname, prerequisites, prerequisite_types, r=0) {
+					let adding = []
+					for (let i = 0; i < prerequisites.length; i++) {
+						let tAppend = [prerequisites[i], inname, prerequisite_types[i]];
+						adding.push(tAppend);
+						let results = searchCourses(prerequisites[i])
+						if (results.length == 1 && r <= 10) {
+							if (results[0].prerequisites.length > 0) {
+								let out = preSearch(prerequisites[i], results[0].prerequisites, results[0].prerequisite_types, r+1)
+								conlog(out.length)
+								adding.concat(out)
+							}
+						}
+					}
+					conlog(adding)
+					return adding
+				}
+				function GeneratePrerequisiteGraph(course) {
+					google.charts.load("current", { packages: ["sankey"] });
+					google.charts.setOnLoadCallback(drawChart);
+					function drawChart() {
+						var data = new google.visualization.DataTable();
+						data.addColumn("string", "From");
+						data.addColumn("string", "To");
+						data.addColumn("number", "Requirement Type");
+						var appendData = [];
+						try {
+							appendData = preSearch(course.name, course.prerequisites, course.prerequisite_types)
+						} catch (e2) {
+                       		presentError(e2,e2,' - Data Parsing')
+                    	}
+						data.addRows(appendData);
+						var options = {
+							sankey: { 
+								node: { 
+									nodePadding: 10
+								}
+							},
+							explorer: {
+								axis: 'horizontal',
+								keepInBounds: true,
+								maxZoomIn: 4.0
+							}
+						};
+						var chart = new google.visualization.Sankey(document.getElementById("preflow"));
+						chart.draw(data, options);
+					}
+				}
+				function showCourse(course) {
+					document.getElementById("infobox").style.display = "flex"
+					document.querySelector("#infobox > #infoboxdata > h3").innerHTML = course.name
+					let divs = document.querySelectorAll("#infobox > #infoboxdata > div")
+					divs[0].innerHTML = course.cid
+					let creds = ""
+					for (var i = 0; i < course.credits.length; i++) {
+						let cctt = convertCreditToText(course.credits[i][0])
+						if (cctt === "Commencement") {
+							creds += `${i === 0 ? "" : ", "}<span>1 ${cctt} Credit</span>`
+						} else {
+							creds += `${i === 0 ? "" : ", "}<span>${course.credits[i][1]} ${cctt} Credit</span>`
+						}
+					}
+					let exams = ""
+					for (var i = 0; i < course.exams.length; i++) {
+						let ectt = convertExamToText(course.exams[i])
+						exams += `${i === 0 ? "" : ", "}<span>${ectt} Exam</span>`
+					}
+					divs[1].innerHTML = creds
+					divs[2].innerHTML = exams
+					let pres = ""
+					for (var i = 0; i < course.prerequisites; i++) {
+						pres += `${i === 0 ? "" : ", "}<span>${course.prerequisites[i]} </span><span>${con}</span>`
+					}
+					documnet.getElementById("pres").innerHTML = pres
+					GeneratePrerequisiteGraph(course)
 				}
 				function PropagateTakenCourseSearchResults() {
 					document.getElementById("addcompletesugglist").innerHTML = ""
@@ -830,9 +947,9 @@
 						for (var ci = 0; ci < results[i].credits.length; ci++) {
 							let cctt = convertCreditToText(results[i].credits[ci][0])
 							if (cctt === "Commencement") {
-
+								creds += `${DIVIDER_SVG}<span>${cctt} Credit</span>`
 							} else {
-								creds += `<span>⋅</span><span>${results[i].credits[ci][1]} ${cctt} Credit</span>`
+								creds += `${DIVIDER_SVG}<span>${results[i].credits[ci][1]} ${cctt} Credit</span>`
 							}
 						}
 						let tmp = `
@@ -871,9 +988,9 @@
 						for (var ci = 0; ci < takenCourses[i].credits.length; ci++) {
 							let cctt = convertCreditToText(takenCourses[i].credits[ci][0])
 							if (cctt === "Commencement") {
-
+								creds += `${DIVIDER_SVG}<span>${cctt} Credit</span>`
 							} else {
-								creds += `<span>⋅</span><span>${takenCourses[i].credits[ci][1]} ${cctt} Credit</span>`
+								creds += `${DIVIDER_SVG}<span>${takenCourses[i].credits[ci][1]} ${cctt} Credit</span>`
 							}
 						}
 						let tmp = `
@@ -884,11 +1001,15 @@
 							</div>`
 						let temp = document.createElement('li');
 						temp.innerHTML = tmp;
+						temp.id = "tcipu"+Courses.findIndex((e) => {return e === takenCourses[i];})
+						temp.addEventListener("click", (e) => {
+							showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])])
+						})
 						frag.appendChild(temp)
 					}
 					document.getElementById("takenCourses").appendChild(frag)
 					if (takenCourses.length === 0) {
-						document.getElementById("takenCourses").innerHTML = "<p>No Results</p>"
+						document.getElementById("takenCourses").innerHTML = "<p>Click + to add a Course</p>"
 					}
 				}
 				function loadCall() {
@@ -901,6 +1022,9 @@
 					})
 					document.getElementById("addcompletename").addEventListener("keyup", PropagateTakenCourseSearchResults)
 					document.getElementById("addcompletecid").addEventListener("keyup", PropagateTakenCourseSearchResults)
+					document.getElementById("infoclose").addEventListener("click",() => {
+						document.getElementById("infobox").style.display = "none"
+					})
 				}
 				/*
 				google.charts.load("current", { packages: ["sankey"] });
@@ -1055,7 +1179,7 @@
                 padding: 5px;
                 font-family: monospace;
             }
-			#addcompletebox {
+			#addcompletebox, #infobox {
 				position: absolute;
                 top: calc(50% - 50px);
                 left: calc(50% - 50px);
@@ -1158,6 +1282,8 @@
 				color: #575757;
 				font-size: 12.5px;
 				overflow-x: scroll;
+				align-items: center;
+				align-content: center;
 				white-space: nowrap;
 				-ms-overflow-style: none;
 				scrollbar-width: none;
@@ -1165,13 +1291,23 @@
 			ul > li > div::-webkit-scrollbar {
 				display: none;
 			}
-			ul > li > div > svg {
+			ul > li > div > svg.bi-check {
 				fill: #ffffff;
 				background-color: rgb(0, 208, 0);
 				border-radius: 50%;
-				width: 16px;
-				height: 16px;
+				width: 14px !important;
+				height: 14px !important;
 				padding: 1px;
+				overflow: visible;
+			}
+			ul > li > div > svg.div {
+				fill: #ffffff;
+				background-color: rgb(136, 136, 136);
+				border-radius: 50%;
+				width: 4px !important;
+				height: 4px !important;
+				padding: 0px;
+				overflow: visible;
 			}
 			#addcompletesugglist > p, #takenCourses > p {
 				margin: 10px 0px;
@@ -1179,7 +1315,7 @@
 				color: #727272;
 				font-style: oblique;
 			}
-			#addcompleteclose {
+			#addcompleteclose, #infoclose {
 				position: absolute;
 				bottom: 30px;
 				width: 205px;
@@ -1208,6 +1344,16 @@
 				text-align:left;
 				font-size: 12.5px;
 			}
+			#infobox {
+				padding-bottom: 60px;
+			}
+			#infoboxdata {
+				width: 250px;
+				font-size: 15px;
+			}
+			#preflow {
+				width: 250px;
+			}
 		</style>
 	</head>
 	<body>
@@ -1224,6 +1370,24 @@
 				<h4>Courses</h4>
 				<ul id="addcompletesugglist">
 				</ul>
+			</div>
+		</div>
+		<div id="infobox" style="display: none;">
+			<div id="infoboxdata">
+				<h3>Name</h3>
+				<label>Course ID:</label>
+				<div></div>
+				<label>Credits:</label>
+				<div></div>
+				<label>Exams:</label>
+				<div></div>
+				<p>Description Goes Here</p>
+				<button id="infoclose">Close</button>
+			</div>
+			<div>
+				<h4>Prerequisites</h4>
+				<div id="pres"></div>
+				<div id="preflow"></div>
 			</div>
 		</div>
         <div id="errorbox" style="display: none;">
