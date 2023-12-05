@@ -1,7 +1,7 @@
 <!DOCTYPE html> 
 <html>
 	<head>
-		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script src='https://cdn.plot.ly/plotly-2.27.0.min.js'></script>
 		<script type="text/javascript">
             /*Ignore This Line (Error Handling)*/var l=false;function presentError(m,oe,t=''){if(!l){window.onload=()=>{l=true;presentError(m,oe,t);};return;}document.getElementById("errormessage").innerHTML=m;document.getElementById("errortype").innerHTML=t;document.getElementById("errorbox").removeAttribute("style");throw oe;};window.onload=()=>{l=true;loadCall();}
 			try {
@@ -848,6 +848,26 @@
 						case PREREQUISITE_OR:
 							result = "Or"
 							break;
+						case PREREQUISITE_RECOMMENDED:
+							result = "Recommended"
+							break;
+						default:
+							break;
+					}
+					return result;
+				}
+				function convertPrerequisiteTypeToColor(pretype) {
+					let result = ""
+					switch (pretype) {
+						case PREREQUISITE_REQUIRED:
+							result = "red"
+							break;
+						case PREREQUISITE_OR:
+							result = "blue"
+							break;
+						case PREREQUISITE_RECOMMENDED:
+							result = "yellow"
+							break;
 						default:
 							break;
 					}
@@ -871,44 +891,76 @@
 						if (results.length == 1 && r <= 10) {
 							if (results[0].prerequisites.length > 0) {
 								let out = preSearch(prerequisites[i], results[0].prerequisites, results[0].prerequisite_types, r+1)
-								conlog(out.length)
-								adding.concat(out)
+								adding = adding.concat(out)
 							}
 						}
 					}
-					conlog(adding)
 					return adding
 				}
 				function GeneratePrerequisiteGraph(course) {
-					google.charts.load("current", { packages: ["sankey"] });
-					google.charts.setOnLoadCallback(drawChart);
-					function drawChart() {
-						var data = new google.visualization.DataTable();
-						data.addColumn("string", "From");
-						data.addColumn("string", "To");
-						data.addColumn("number", "Requirement Type");
-						var appendData = [];
-						try {
-							appendData = preSearch(course.name, course.prerequisites, course.prerequisite_types)
-						} catch (e2) {
-                       		presentError(e2,e2,' - Data Parsing')
-                    	}
-						data.addRows(appendData);
-						var options = {
-							sankey: { 
-								node: { 
-									nodePadding: 10
-								}
-							},
-							explorer: {
-								axis: 'horizontal',
-								keepInBounds: true,
-								maxZoomIn: 4.0
-							}
-						};
-						var chart = new google.visualization.Sankey(document.getElementById("preflow"));
-						chart.draw(data, options);
+					var layout = {
+						font: {
+							size: 10
+						},
+						margin: {
+							t: 0,
+							l: 0,
+							r: 0,
+							b: 0
+						}
 					}
+					var appendData = [];
+					try {
+						appendData = preSearch(course.name, course.prerequisites, course.prerequisite_types)
+					} catch (e2) {
+						presentError(e2,e2,' - Data Parsing')
+					}
+					var label = []
+					var color = []
+					var source = []
+					var target = []
+					var value = []
+					for (var i = 0; i < appendData.length; i++) {
+						var inID = label.findIndex((e) => {return e === appendData[i][0]})
+						if (inID === -1) {
+							label.push(appendData[i][0])
+							color.push(convertPrerequisiteTypeToColor(appendData[i][2]))
+							inID = label.length - 1
+						}
+						var outID = label.findIndex((e) => {return e === appendData[i][1]})
+						if (outID === -1) {
+							label.push(appendData[i][1])
+							color.push(convertPrerequisiteTypeToColor(appendData[i][2]))
+							outID = label.length - 1
+						}
+						source.push(inID)
+						target.push(outID)
+						value.push(1)
+					}
+					var data = {
+						type: "sankey",
+						orientation: "h",
+						node: {
+							pad: 30,
+							thickness: 10,
+							line: {
+								color: "black",
+								width: 0.5
+							},
+							label: label,
+							color: color
+						},
+
+						link: {
+							source: source,
+							target: target,
+							value:  value
+						},
+						arrangement: 'snap'
+					}
+					var data = [data]
+					Plotly.react('preflow', data, layout, {scrollZoom: true})
+				
 				}
 				function showCourse(course) {
 					document.getElementById("infobox").style.display = "flex"
@@ -935,7 +987,7 @@
 					for (var i = 0; i < course.prerequisites; i++) {
 						pres += `${i === 0 ? "" : ", "}<span>${course.prerequisites[i]} </span><span>${con}</span>`
 					}
-					documnet.getElementById("pres").innerHTML = pres
+					document.getElementById("pres").innerHTML = pres
 					GeneratePrerequisiteGraph(course)
 				}
 				function PropagateTakenCourseSearchResults() {
@@ -1352,7 +1404,8 @@
 				font-size: 15px;
 			}
 			#preflow {
-				width: 250px;
+				width: 350px;
+				height: 250px
 			}
 		</style>
 	</head>
