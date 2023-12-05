@@ -888,10 +888,15 @@
 						let tAppend = [prerequisites[i], inname, prerequisite_types[i]];
 						adding.push(tAppend);
 						let results = searchCourses(prerequisites[i])
-						if (results.length == 1 && r <= 10) {
+						if (results.length >= 1 && r <= 4) {
 							if (results[0].prerequisites.length > 0) {
-								let out = preSearch(prerequisites[i], results[0].prerequisites, results[0].prerequisite_types, r+1)
-								adding = adding.concat(out)
+								for (var preI = 0; preI < results.length; preI++) {
+									if (results[preI].prerequisites.length > 0) {
+										console.log(prerequisites[i],"<-",results[preI].prerequisites,"r=",r,"INAME",inname)
+										let out = preSearch(prerequisites[i], results[preI].prerequisites, results[preI].prerequisite_types, r+1)
+										adding = adding.concat(out)
+									}
+								}
 							}
 						}
 					}
@@ -907,7 +912,9 @@
 							l: 0,
 							r: 0,
 							b: 0
-						}
+						},
+						paper_bgcolor: 'rgba(0,0,0,0)',
+   						plot_bgcolor: 'rgba(0,0,0,0)'
 					}
 					var appendData = [];
 					try {
@@ -956,10 +963,16 @@
 							target: target,
 							value:  value
 						},
-						arrangement: 'snap'
+						arrangement: 'snap',
+						hoverinfo: false
+
 					}
 					var data = [data]
-					Plotly.react('preflow', data, layout, {scrollZoom: true})
+					Plotly.react('preflow', data, layout, {
+						scrollZoom: true,
+						responsive: true,
+						modebar_add: ['zoom','pan']
+					})
 				
 				}
 				function showCourse(course) {
@@ -1405,7 +1418,8 @@
 			}
 			#preflow {
 				width: 350px;
-				height: 250px
+				height: 250px;
+				background-color: #cccccc;
 			}
 		</style>
 	</head>
