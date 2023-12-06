@@ -1267,6 +1267,8 @@
 			if (takenCourses.findIndex((e) => {return e.name === course.prerequisites[i]}) === -1) {
 				if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) {
 					continue
+				} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) {
+					continue
 				} else {
 					return false
 				}
@@ -1313,7 +1315,9 @@
 			if (takenCourses.findIndex((e) => {return e.name === course.prerequisites[i]}) === -1) {
 				if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) {
 					svg = NA_SVG
-				} else {
+				} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) {
+					svg = NA_SVG
+				}  else {
 					svg = X_SVG
 					pres_complete = false
 				}
@@ -1485,6 +1489,7 @@
           document.getElementById("infoclose").addEventListener("click", () => {
             document.getElementById("infobox").style.display = "none";
           });
+		  CalculateDiploma()
         }
         function CalculateDiploma() {
 			let e = (id, value) => {
@@ -1492,10 +1497,17 @@
 				document.getElementById(id).innerText = cv;
 				if (cv >= parseFloat(document.getElementById(id+"-t").innerText)) {
 					document.getElementById(id).className = "accepted"
+					document.getElementById(id+"-s").innerHTML = CHECKMARK_SVG + "&nbsp;"
+				}
+				if (cv <= parseFloat(document.getElementById(id+"-t").innerText)) {
+					document.getElementById(id).className = "failed"
+					document.getElementById(id+"-s").innerHTML = X_SVG + "&nbsp;"
 				}
 			}
 			let r = (id) => {
 				document.getElementById(id).innerText = 0;
+				document.getElementById(id).className = "failed"
+				document.getElementById(id+"-s").innerHTML = X_SVG + "&nbsp;"
 			}
 			r("rd-tc")
 			r("rd-ec")
@@ -1972,6 +1984,11 @@
 		align-items: center;
 		align-content: center;
 	  }
+	  .diploma > div > div {
+		display: flex;
+		align-items: center;
+		align-content: center;
+	  }
 	  .diploma > div > label {
 		font-size: 15px;
 		color: #000000;
@@ -2033,7 +2050,6 @@
         <div></div>
         <label>Exams:</label>
         <div></div>
-        <p>Description Goes Here</p>
         <button id="infoclose">Close</button>
       </div>
       <div>
@@ -2144,54 +2160,63 @@
 			<div class="diploma">
 				<h3>Regents Diploma</h3>
 				<div>
+					<div id="rd-tc-s"></div>
 					<label>Total Credits:&nbsp;</label>
 					<div id="rd-tc" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-tc-t">22</div>
 				</div>
 				<div>
+					<div id="rd-ec-s"></div>
 					<label>English Credits:&nbsp;</label>
 					<div id="rd-ec" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-ec-t">4</div>
 				</div>
 				<div>
+					<div id="rd-ssc-s"></div>
 					<label>Social Studies Credits:&nbsp;</label>
 					<div id="rd-ssc" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-ssc-t">4</div>
 				</div>
 				<div>
+					<div id="rd-mc-s"></div>
 					<label>Math Credits:&nbsp;</label>
 					<div id="rd-mc" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-mc-t">3</div>
 				</div>
 				<div>
+					<div id="rd-sc-s"></div>
 					<label>Science Credits:&nbsp;</label>
 					<div id="rd-sc" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-sc-t">3</div>
 				</div>
 				<div>
+					<div id="rd-pec-s"></div>
 					<label>P.E. Credits:&nbsp;</label>
 					<div id="rd-pec" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-pec-t">2</div>
 				</div>
 				<div>
+					<div id="rd-wlc-s"></div>
 					<label>World Language Credits:&nbsp;</label>
 					<div id="rd-wlc" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-wlc-t">1</div>
 				</div>
 				<div>
+					<div id="rd-hc-s"></div>
 					<label>Health Credits:&nbsp;</label>
 					<div id="rd-hc" class="failed">0</div>
 					<div>/</div>
 					<div id="rd-hc-t">1</div>
 				</div>
 				<div>
+					<div id="rd-cc-s"></div>
 					<label>Commencement:&nbsp;</label>
 					<div id="rd-cc" class="failed">0</div>
 					<div>/</div>
