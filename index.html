@@ -1499,7 +1499,7 @@
 					document.getElementById(id).className = "accepted"
 					document.getElementById(id+"-s").innerHTML = CHECKMARK_SVG + "&nbsp;"
 				}
-				if (cv <= parseFloat(document.getElementById(id+"-t").innerText)) {
+				if (cv < parseFloat(document.getElementById(id+"-t").innerText)) {
 					document.getElementById(id).className = "failed"
 					document.getElementById(id+"-s").innerHTML = X_SVG + "&nbsp;"
 				}
@@ -1984,10 +1984,11 @@
 		align-items: center;
 		align-content: center;
 	  }
-	  .diploma > div > div {
+	  .diploma > div > div:nth-child(1) {
 		display: flex;
 		align-items: center;
 		align-content: center;
+		min-width: 22.5px;
 	  }
 	  .diploma > div > label {
 		font-size: 15px;
