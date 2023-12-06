@@ -969,8 +969,9 @@
 		  const DIVIDER_SVG =
           '<svg preserveAspectRatio="none" width="4" height="4" class="div" fill="currentColor" viewBox="0 0 4 4"><circle></circle></svg>';
 		const WARNING_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>'
-		  const LIGHT_GREEN = "#77ff7733"
-        var takenCourses = [];
+		const LIGHT_GREEN = "#77ff7733"
+        const LIGHT_GREY = "#aaaaaa33"
+		var takenCourses = [];
         function conlog(msg) {
           document.body.innerHTML += "<p>" + msg + "</p><br>";
         }
@@ -1174,10 +1175,19 @@
             var inID = label.findIndex((e) => {
               return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
             });
+			let greyify = false
             if (inID === -1) {
 				let taken = takenCourses.findIndex((e) => {return e.name === appendData[i][0];}) === -1
 				label.push(taken ? appendData[i][0]: appendData[i][0] + " &#10003;");
-				color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+				let or_check = coursePrerequisitesMet(Courses[Courses.findIndex((e) => {return e.name === appendData[i][1]  || e === appendData[i][1] + " &#10003;";})], true)
+				if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
+					color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
+					if (taken) { 
+						greyify = true;
+					}
+				} else {
+					color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+				}
 				inID = label.length - 1;
             }
             var outID = label.findIndex((e) => {
@@ -1191,9 +1201,17 @@
             }
             source.push(inID);
             target.push(outID);
-            linkcolor.push(
-				takenCourses.findIndex((e) => {return e.name === appendData[i][0];}) === -1 ? convertPrerequisiteTypeToColorLight(appendData[i][2]) : LIGHT_GREEN
-            );
+			let lnc = ''
+            if (takenCourses.findIndex((e) => {return e.name === appendData[i][0];}) === -1) {
+				if (greyify) {
+					lnc = LIGHT_GREY
+				} else {
+					lnc = convertPrerequisiteTypeToColorLight(appendData[i][2])
+				}
+			} else {
+				lnc = LIGHT_GREEN
+			}
+			linkcolor.push(lnc);
             value.push(1);
           }
           var data = {
@@ -1226,7 +1244,7 @@
             modebar_add: ["zoom", "pan"],
           });
         }
-		function coursePrerequisitesMet(course) {
+		function coursePrerequisitesMet(course, just_or = false) {
 		  let presOrComplete = false
 		  let containedOr = false
 		  for (var i = 0; i < course.prerequisites.length; i++) {
@@ -1237,6 +1255,9 @@
 				presOrComplete = true
 				break
 			}
+		  }
+		  if (just_or) {
+			return [containedOr, presOrComplete]
 		  }
 		  if (!presOrComplete && containedOr) {
 			return false
@@ -1307,7 +1328,9 @@
 		  let pretitle = document.getElementById("pretitle");
 		  pretitle.innerHTML = pres_complete ? "COMPLETE "+CHECKMARK_SVG : "INCOMPLETE "+X_SVG
 		  pretitle.className = pres_complete ? "accepted" : "failed" 
+		  errorHandle(()=>{
           GeneratePrerequisiteGraph(course);
+		  })
         }
         function PropagateTakenCourseSearchResults() {
           document.getElementById("addcompletesugglist").innerHTML = "";
@@ -1425,12 +1448,28 @@
           }
 		  CalculateDiploma()
         }
-        function loadCall() {
+        function errorHandle(func) {
+			try {
+				func()
+			} catch (e) {
+				presentError(
+				"Unknown Error - Contact Creator! <br><br><pre>Name: " +
+					e.name +
+					"<br>Message: " +
+					e.message +
+					"<br>Stack: " +
+					e.stack +
+					"</pre>",
+					e
+				);
+			}
+		}
+		function loadCall() {
           document
             .getElementById("addcomplete")
             .addEventListener("click", () => {
               document.getElementById("addcompletebox").style.display = "flex";
-              PropagateTakenCourseSearchResults();
+              errorHandle(PropagateTakenCourseSearchResults);
             });
           document
             .getElementById("addcompleteclose")
@@ -1439,10 +1478,10 @@
             });
           document
             .getElementById("addcompletename")
-            .addEventListener("keyup", PropagateTakenCourseSearchResults);
+            .addEventListener("keyup", ()=>{errorHandle(PropagateTakenCourseSearchResults)});
           document
             .getElementById("addcompletecid")
-            .addEventListener("keyup", PropagateTakenCourseSearchResults);
+            .addEventListener("keyup",  ()=>{errorHandle(PropagateTakenCourseSearchResults)});
           document.getElementById("infoclose").addEventListener("click", () => {
             document.getElementById("infobox").style.display = "none";
           });
@@ -1643,6 +1682,12 @@
       #errorbox > h4 {
         margin: 5px;
       }
+	  #errorbox > svg {
+		width: 64px !important;
+        height: 64px !important;
+        padding: 1px;
+        overflow: visible;
+	  }
       pre {
         background-color: #0f0f0f;
         border: #bababa solid 2px;
@@ -2007,6 +2052,17 @@
             <circle cx="3.5" cy="3.5" r="7"></circle>
           </svg>
           <div>Complete</div>
+		  <svg
+            preserveAspectRatio="none"
+            width="7"
+            height="7"
+            class="color"
+            style="--c: #cccccc"
+            viewBox="0 0 7 7"
+          >
+            <circle cx="3.5" cy="3.5" r="7"></circle>
+          </svg>
+          <div>NA</div>
           <svg
             preserveAspectRatio="none"
             width="7"
