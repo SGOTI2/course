@@ -23,7 +23,7 @@
 			}
 			window.onload = () => {
 				l = true;
-				loadCall();
+				errorHandle(loadCall);
 			};
 			try {
 				const PREREQUISITE_AND = 1;
@@ -1477,6 +1477,9 @@
 					document.getElementById("infoclose").addEventListener("click", () => {
 						document.getElementById("infobox").style.display = "none";
 					});
+					document.getElementById("creditFilter").addEventListener("change", () => {
+						errorHandle(PropagateCourseChart)
+					})
 					errorHandle(CalculateDiploma);
 					errorHandle(PropagateCourseChart)
 				}
@@ -1540,6 +1543,17 @@
 						}
 					}
 				}
+				function FilterCourse(course) {
+					if (course === undefined) {
+						return true
+					}
+					let selectedCredit = document.getElementById("creditFilter").value
+					let creditText = convertCreditToText(course.credits[0][1])
+					if (selectedCredit != "Any Credit" && selectedCredit != creditText) {
+						return true
+					}
+					return false
+				}
 				function PropagateCourseChart() {
 					var layout = {
 						font: {
@@ -1571,6 +1585,12 @@
 						var inID = label.findIndex((e) => {
 							return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
 						});
+						let inCourseID = Courses.findIndex((e) => {
+										return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
+									})
+						if (FilterCourse(Courses[inCourseID])) {
+							continue
+						}
 						let greyify = false;
 						if (inID === -1) {
 							let taken =
@@ -1579,11 +1599,7 @@
 							}) === -1;
 							label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
 							let or_check = coursePrerequisitesMet(
-								Courses[
-									Courses.findIndex((e) => {
-										return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
-									})
-								],
+								Courses[inCourseID],
 								true
 								);
 								if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
@@ -2284,7 +2300,74 @@
 			<div class="header">
 				<h2>All Courses</h2>
 			</div>
+			<div>
+				<select id="creditFilter">
+					<option>Any Credit</option>
+					<option>Math</option>
+					<option>Science</option>
+					<option>Music</option>
+					<option>Health</option>
+					<option>P.E.</option>
+				</select>
+			</div>
 			<div id="allc"></div>
+			<legend id="prelegend">
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: #77ff77"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Complete</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: #cccccc"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>NA</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: red"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Required</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: blue"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Either</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: yellow"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Recommended</div>
+			</legend>
 		</div>
 		<div>
 			<div class="header">
