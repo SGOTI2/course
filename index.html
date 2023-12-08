@@ -4,8 +4,8 @@
 		<script src="./plotly.js"></script>
 		<script src="./erep.js"></script>
 		<script type="text/javascript">
-			if (window.Erep === undefined) {
-				window.Erep = {Log: (v,l)=>{console.log(v)}}
+			if (window.ERep === undefined) {
+				window.ERep = {Log: (v,l)=>{console.log(v)}}
 			}
 			/*Error Handling*/ var l = false;
 			function presentError(m, oe, t = "") {
@@ -23,13 +23,14 @@
 			}
 			window.onload = () => {
 				l = true;
-				loadCall();
+				errorHandle(loadCall);
 			};
 			try {
 				const PREREQUISITE_AND = 1;
 				const PREREQUISITE_REQUIRED = 1;
 				const PREREQUISITE_OR = 2;
 				const PREREQUISITE_RECOMMENDED = 3;
+				const PREREQUISITE_NONE = 4
 
 				const LOCAL_EXAM = 0;
 				const REGENTS_EXAM = 1;
@@ -910,8 +911,8 @@
 						grade: [11, 12],
 						exams: [AP_EXAM_ENCOURAGED],
 						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: ["Physical Setting: Physics", "Calculus"],
-						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
+						prerequisites: ["Physical Setting: Physics with Optics", "Calculus H (SUPA)", "AP Calculus BC", "Calculus III"],
+						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
 						length: [FULL_YEAR],
 						dual: false,
 					},
@@ -1027,6 +1028,9 @@
 						case PREREQUISITE_RECOMMENDED:
 							result = "yellow";
 							break;
+						case PREREQUISITE_NONE:
+							result = LIGHT_GREY
+							break
 						default:
 							break;
 					}
@@ -1044,6 +1048,9 @@
 						case PREREQUISITE_RECOMMENDED:
 							result = "#ffffaa";
 							break;
+						case PREREQUISITE_NONE:
+							result = LIGHT_GREY
+							break
 						default:
 							break;
 					}
@@ -1062,8 +1069,11 @@
 					return objs;
 				}
 				var ttp = [];
-				function preSearch(inname, prerequisites, prerequisite_types, r = 0) {
+				function preSearch(inname, prerequisites, prerequisite_types, ueph=false, r = 0) {
 					let adding = [];
+					if (prerequisites.length === 0 && ueph) {
+						return [["No Prerequisite",inname, PREREQUISITE_NONE]]
+					}
 					for (let i = 0; i < prerequisites.length; i++) {
 						let adds = [prerequisites[i], inname, prerequisite_types[i]];
 						if (
@@ -1078,19 +1088,11 @@
 								if (results[0].prerequisites.length > 0) {
 									for (var preI = 0; preI < results.length; preI++) {
 										if (results[preI].prerequisites.length > 0) {
-											console.log(
-												prerequisites[i],
-												"<-",
-												results[preI].prerequisites,
-												"r=",
-												r,
-												"INAME",
-												inname
-											);
 											let out = preSearch(
 												prerequisites[i],
 												results[preI].prerequisites,
 												results[preI].prerequisite_types,
+												ueph,
 												r + 1
 											);
 											adding = adding.concat(out);
@@ -1292,7 +1294,6 @@
 								return e.name === course.prerequisites[i];
 							}) != -1
 						) {
-							console.log(course.prerequisites[i]);
 							presOrComplete = true;
 							break;
 						}
@@ -1477,6 +1478,9 @@
 					document.getElementById("infoclose").addEventListener("click", () => {
 						document.getElementById("infobox").style.display = "none";
 					});
+					document.getElementById("creditFilter").addEventListener("change", () => {
+						errorHandle(PropagateCourseChart)
+					})
 					errorHandle(CalculateDiploma);
 					errorHandle(PropagateCourseChart)
 				}
@@ -1540,6 +1544,19 @@
 						}
 					}
 				}
+				function FilterCourse(course) {
+					if (course === undefined) {
+						return false
+					}
+					let selectedCredit = document.getElementById("creditFilter").value
+					let creditText = convertCreditToText(course.credits[0][0])
+					if (selectedCredit != "Any Credit") {
+						if (selectedCredit != creditText) {
+							return true
+						}
+					}
+					return false
+				}
 				function PropagateCourseChart() {
 					var layout = {
 						font: {
@@ -1556,7 +1573,7 @@
 					try {
 						ttp = [];
 						for (let i = 0; i < Courses.length; i++) {
-							appendData.push(...preSearch(Courses[i].name, Courses[i].prerequisites, Courses[i].prerequisite_types));
+							appendData.push(...preSearch(Courses[i].name, Courses[i].prerequisites, Courses[i].prerequisite_types, true));
 						}
 					} catch (e2) {
 						presentError(e2, e2, " - Data Parsing");
@@ -1571,6 +1588,12 @@
 						var inID = label.findIndex((e) => {
 							return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
 						});
+						let inCourseID = Courses.findIndex((e) => {
+										return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
+									})
+						if (FilterCourse(Courses[inCourseID])) {
+							continue
+						}
 						let greyify = false;
 						if (inID === -1) {
 							let taken =
@@ -1579,11 +1602,7 @@
 							}) === -1;
 							label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
 							let or_check = coursePrerequisitesMet(
-								Courses[
-									Courses.findIndex((e) => {
-										return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
-									})
-								],
+								Courses[inCourseID],
 								true
 								);
 								if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
@@ -1632,7 +1651,7 @@
 						orientation: "h",
 						node: {
 							pad: 10,
-							thickness: 10,
+							thickness: 5,
 							line: {
 								color: "black",
 								width: 0,
@@ -2284,7 +2303,75 @@
 			<div class="header">
 				<h2>All Courses</h2>
 			</div>
+			<div>
+				<select id="creditFilter">
+					<option>Any Credit</option>
+					<option>Math</option>
+					<option>English</option>
+					<option>Science</option>
+					<option>Music</option>
+					<option>Health</option>
+					<option>P.E.</option>
+				</select>
+			</div>
 			<div id="allc"></div>
+			<legend id="prelegend">
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: #77ff77"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Complete</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: #cccccc"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>NA</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: red"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Required</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: blue"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Either</div>
+				<svg
+					preserveAspectRatio="none"
+					width="7"
+					height="7"
+					class="color"
+					style="--c: yellow"
+					viewBox="0 0 7 7"
+				>
+					<circle cx="3.5" cy="3.5" r="7"></circle>
+				</svg>
+				<div>Recommended</div>
+			</legend>
 		</div>
 		<div>
 			<div class="header">
@@ -2360,7 +2447,7 @@
 			</div>
 		</div>
 		<footer>
-			Version 0.1 Alpha (Build <span id="buildid">1172023125045</span>) -
+			Version 0.1 Alpha (Build <span id="buildid">1172023225617</span>) -
 			<a href="https://github.com/SGOTI2/course">Github</a> -
 			<a href="https://github.com/SGOTI2/course/issues">Issues</a>
 		</footer>
