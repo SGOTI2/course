@@ -1407,7 +1407,7 @@
 				function PropagateTakenCourses() {
 					document.getElementById("takenCourses").innerHTML = "";
 					var frag = document.createDocumentFragment();
-					for (var i = 0; i < takenCourses.length; i++) {
+					for (let i = 0; i < takenCourses.length; i++) {
 						let creds = "";
 						for (var ci = 0; ci < takenCourses[i].credits.length; ci++) {
 							let cctt = convertCreditToText(takenCourses[i].credits[ci][0]);
@@ -1442,7 +1442,15 @@
 							});
 						temp.className = "tcf"
 						temp.addEventListener("click", (e) => {
-							showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]);
+							if (e.target.id === "") {
+								console.log(i)
+								takenCourses.splice(i,1)
+								PropagateTakenCourseSearchResults()
+								PropagateTakenCourses()
+								PropagateCourseChart()
+							} else {
+								showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]);
+							}
 						});
 						frag.appendChild(temp);
 					}
