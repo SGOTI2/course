@@ -4,8 +4,13 @@
 		<script src="./plotly.js"></script>
 		<script src="./erep.js"></script>
 		<script type="text/javascript">
+			var isDarkMode = false;
 			if (window.ERep === undefined) {
-				window.ERep = {Log: (v,l)=>{console.log(v)}}
+				window.ERep = {
+					Log: (v, l) => {
+						console.log(v);
+					},
+				};
 			}
 			/*Error Handling*/ var l = false;
 			function presentError(m, oe, t = "") {
@@ -30,7 +35,7 @@
 				const PREREQUISITE_REQUIRED = 1;
 				const PREREQUISITE_OR = 2;
 				const PREREQUISITE_RECOMMENDED = 3;
-				const PREREQUISITE_NONE = 4
+				const PREREQUISITE_NONE = 4;
 
 				const LOCAL_EXAM = 0;
 				const REGENTS_EXAM = 1;
@@ -911,12 +916,574 @@
 						grade: [11, 12],
 						exams: [AP_EXAM_ENCOURAGED],
 						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: ["Physical Setting: Physics with Optics", "Calculus H (SUPA)", "AP Calculus BC", "Calculus III"],
-						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
+						prerequisites: [
+							"Physical Setting: Physics with Optics",
+							"Calculus H (SUPA)",
+							"AP Calculus BC",
+							"Calculus III",
+						],
+						prerequisite_types: [
+							PREREQUISITE_REQUIRED,
+							PREREQUISITE_OR,
+							PREREQUISITE_OR,
+							PREREQUISITE_OR,
+						],
 						length: [FULL_YEAR],
 						dual: false,
 					},
 				];
+				const template = {
+					data: {
+						barpolar: [
+							{
+								marker: {
+									line: {
+										color: "#232329",
+										width: 0.5,
+									},
+									pattern: {
+										fillmode: "overlay",
+										size: 10,
+										solidity: 0.2,
+									},
+								},
+								type: "barpolar",
+							},
+						],
+						bar: [
+							{
+								error_x: {
+									color: "#f2f5fa",
+								},
+								error_y: {
+									color: "#f2f5fa",
+								},
+								marker: {
+									line: {
+										color: "#232329",
+										width: 0.5,
+									},
+									pattern: {
+										fillmode: "overlay",
+										size: 10,
+										solidity: 0.2,
+									},
+								},
+								type: "bar",
+							},
+						],
+						carpet: [
+							{
+								aaxis: {
+									endlinecolor: "#A2B1C6",
+									gridcolor: "#506784",
+									linecolor: "#506784",
+									minorgridcolor: "#506784",
+									startlinecolor: "#A2B1C6",
+								},
+								baxis: {
+									endlinecolor: "#A2B1C6",
+									gridcolor: "#506784",
+									linecolor: "#506784",
+									minorgridcolor: "#506784",
+									startlinecolor: "#A2B1C6",
+								},
+								type: "carpet",
+							},
+						],
+						choropleth: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								type: "choropleth",
+							},
+						],
+						contourcarpet: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								type: "contourcarpet",
+							},
+						],
+						contour: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								colorscale: [
+									[0.0, "#0d0887"],
+									[0.1111111111111111, "#46039f"],
+									[0.2222222222222222, "#7201a8"],
+									[0.3333333333333333, "#9c179e"],
+									[0.4444444444444444, "#bd3786"],
+									[0.5555555555555556, "#d8576b"],
+									[0.6666666666666666, "#ed7953"],
+									[0.7777777777777778, "#fb9f3a"],
+									[0.8888888888888888, "#fdca26"],
+									[1.0, "#f0f921"],
+								],
+								type: "contour",
+							},
+						],
+						heatmapgl: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								colorscale: [
+									[0.0, "#0d0887"],
+									[0.1111111111111111, "#46039f"],
+									[0.2222222222222222, "#7201a8"],
+									[0.3333333333333333, "#9c179e"],
+									[0.4444444444444444, "#bd3786"],
+									[0.5555555555555556, "#d8576b"],
+									[0.6666666666666666, "#ed7953"],
+									[0.7777777777777778, "#fb9f3a"],
+									[0.8888888888888888, "#fdca26"],
+									[1.0, "#f0f921"],
+								],
+								type: "heatmapgl",
+							},
+						],
+						heatmap: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								colorscale: [
+									[0.0, "#0d0887"],
+									[0.1111111111111111, "#46039f"],
+									[0.2222222222222222, "#7201a8"],
+									[0.3333333333333333, "#9c179e"],
+									[0.4444444444444444, "#bd3786"],
+									[0.5555555555555556, "#d8576b"],
+									[0.6666666666666666, "#ed7953"],
+									[0.7777777777777778, "#fb9f3a"],
+									[0.8888888888888888, "#fdca26"],
+									[1.0, "#f0f921"],
+								],
+								type: "heatmap",
+							},
+						],
+						histogram2dcontour: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								colorscale: [
+									[0.0, "#0d0887"],
+									[0.1111111111111111, "#46039f"],
+									[0.2222222222222222, "#7201a8"],
+									[0.3333333333333333, "#9c179e"],
+									[0.4444444444444444, "#bd3786"],
+									[0.5555555555555556, "#d8576b"],
+									[0.6666666666666666, "#ed7953"],
+									[0.7777777777777778, "#fb9f3a"],
+									[0.8888888888888888, "#fdca26"],
+									[1.0, "#f0f921"],
+								],
+								type: "histogram2dcontour",
+							},
+						],
+						histogram2d: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								colorscale: [
+									[0.0, "#0d0887"],
+									[0.1111111111111111, "#46039f"],
+									[0.2222222222222222, "#7201a8"],
+									[0.3333333333333333, "#9c179e"],
+									[0.4444444444444444, "#bd3786"],
+									[0.5555555555555556, "#d8576b"],
+									[0.6666666666666666, "#ed7953"],
+									[0.7777777777777778, "#fb9f3a"],
+									[0.8888888888888888, "#fdca26"],
+									[1.0, "#f0f921"],
+								],
+								type: "histogram2d",
+							},
+						],
+						histogram: [
+							{
+								marker: {
+									pattern: {
+										fillmode: "overlay",
+										size: 10,
+										solidity: 0.2,
+									},
+								},
+								type: "histogram",
+							},
+						],
+						mesh3d: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								type: "mesh3d",
+							},
+						],
+						parcoords: [
+							{
+								line: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "parcoords",
+							},
+						],
+						pie: [
+							{
+								automargin: true,
+								type: "pie",
+							},
+						],
+						scatter3d: [
+							{
+								line: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								marker: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "scatter3d",
+							},
+						],
+						scattercarpet: [
+							{
+								marker: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "scattercarpet",
+							},
+						],
+						scattergeo: [
+							{
+								marker: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "scattergeo",
+							},
+						],
+						scattergl: [
+							{
+								marker: {
+									line: {
+										color: "#283442",
+									},
+								},
+								type: "scattergl",
+							},
+						],
+						scattermapbox: [
+							{
+								marker: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "scattermapbox",
+							},
+						],
+						scatterpolargl: [
+							{
+								marker: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "scatterpolargl",
+							},
+						],
+						scatterpolar: [
+							{
+								marker: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "scatterpolar",
+							},
+						],
+						scatter: [
+							{
+								marker: {
+									line: {
+										color: "#283442",
+									},
+								},
+								type: "scatter",
+							},
+						],
+						scatterternary: [
+							{
+								marker: {
+									colorbar: {
+										outlinewidth: 0,
+										ticks: "",
+									},
+								},
+								type: "scatterternary",
+							},
+						],
+						surface: [
+							{
+								colorbar: {
+									outlinewidth: 0,
+									ticks: "",
+								},
+								colorscale: [
+									[0.0, "#0d0887"],
+									[0.1111111111111111, "#46039f"],
+									[0.2222222222222222, "#7201a8"],
+									[0.3333333333333333, "#9c179e"],
+									[0.4444444444444444, "#bd3786"],
+									[0.5555555555555556, "#d8576b"],
+									[0.6666666666666666, "#ed7953"],
+									[0.7777777777777778, "#fb9f3a"],
+									[0.8888888888888888, "#fdca26"],
+									[1.0, "#f0f921"],
+								],
+								type: "surface",
+							},
+						],
+						table: [
+							{
+								cells: {
+									fill: {
+										color: "#506784",
+									},
+									line: {
+										color: "#232329",
+									},
+								},
+								header: {
+									fill: {
+										color: "#2a3f5f",
+									},
+									line: {
+										color: "#232329",
+									},
+								},
+								type: "table",
+							},
+						],
+					},
+					layout: {
+						annotationdefaults: {
+							arrowcolor: "#f2f5fa",
+							arrowhead: 0,
+							arrowwidth: 1,
+						},
+						autotypenumbers: "strict",
+						coloraxis: {
+							colorbar: {
+								outlinewidth: 0,
+								ticks: "",
+							},
+						},
+						colorscale: {
+							diverging: [
+								[0, "#8e0152"],
+								[0.1, "#c51b7d"],
+								[0.2, "#de77ae"],
+								[0.3, "#f1b6da"],
+								[0.4, "#fde0ef"],
+								[0.5, "#f7f7f7"],
+								[0.6, "#e6f5d0"],
+								[0.7, "#b8e186"],
+								[0.8, "#7fbc41"],
+								[0.9, "#4d9221"],
+								[1, "#276419"],
+							],
+							sequential: [
+								[0.0, "#0d0887"],
+								[0.1111111111111111, "#46039f"],
+								[0.2222222222222222, "#7201a8"],
+								[0.3333333333333333, "#9c179e"],
+								[0.4444444444444444, "#bd3786"],
+								[0.5555555555555556, "#d8576b"],
+								[0.6666666666666666, "#ed7953"],
+								[0.7777777777777778, "#fb9f3a"],
+								[0.8888888888888888, "#fdca26"],
+								[1.0, "#f0f921"],
+							],
+							sequentialminus: [
+								[0.0, "#0d0887"],
+								[0.1111111111111111, "#46039f"],
+								[0.2222222222222222, "#7201a8"],
+								[0.3333333333333333, "#9c179e"],
+								[0.4444444444444444, "#bd3786"],
+								[0.5555555555555556, "#d8576b"],
+								[0.6666666666666666, "#ed7953"],
+								[0.7777777777777778, "#fb9f3a"],
+								[0.8888888888888888, "#fdca26"],
+								[1.0, "#f0f921"],
+							],
+						},
+						colorway: [
+							"#636efa",
+							"#EF553B",
+							"#00cc96",
+							"#ab63fa",
+							"#FFA15A",
+							"#19d3f3",
+							"#FF6692",
+							"#B6E880",
+							"#FF97FF",
+							"#FECB52",
+						],
+						font: {
+							color: "#f2f5fa",
+						},
+						geo: {
+							bgcolor: "#232329",
+							lakecolor: "#232329",
+							landcolor: "#232329",
+							showlakes: true,
+							showland: true,
+							subunitcolor: "#506784",
+						},
+						hoverlabel: {
+							align: "left",
+						},
+						hovermode: "closest",
+						mapbox: {
+							style: "dark",
+						},
+						paper_bgcolor: "#232329",
+						plot_bgcolor: "#232329",
+						polar: {
+							angularaxis: {
+								gridcolor: "#506784",
+								linecolor: "#506784",
+								ticks: "",
+							},
+							bgcolor: "#232329",
+							radialaxis: {
+								gridcolor: "#506784",
+								linecolor: "#506784",
+								ticks: "",
+							},
+						},
+						scene: {
+							xaxis: {
+								backgroundcolor: "#232329",
+								gridcolor: "#506784",
+								gridwidth: 2,
+								linecolor: "#506784",
+								showbackground: true,
+								ticks: "",
+								zerolinecolor: "#C8D4E3",
+							},
+							yaxis: {
+								backgroundcolor: "#232329",
+								gridcolor: "#506784",
+								gridwidth: 2,
+								linecolor: "#506784",
+								showbackground: true,
+								ticks: "",
+								zerolinecolor: "#C8D4E3",
+							},
+							zaxis: {
+								backgroundcolor: "#232329",
+								gridcolor: "#506784",
+								gridwidth: 2,
+								linecolor: "#506784",
+								showbackground: true,
+								ticks: "",
+								zerolinecolor: "#C8D4E3",
+							},
+						},
+						shapedefaults: {
+							line: {
+								color: "#f2f5fa",
+							},
+						},
+						sliderdefaults: {
+							bgcolor: "#C8D4E3",
+							bordercolor: "#232329",
+							borderwidth: 1,
+							tickwidth: 0,
+						},
+						ternary: {
+							aaxis: {
+								gridcolor: "#506784",
+								linecolor: "#506784",
+								ticks: "",
+							},
+							baxis: {
+								gridcolor: "#506784",
+								linecolor: "#506784",
+								ticks: "",
+							},
+							bgcolor: "#232329",
+							caxis: {
+								gridcolor: "#506784",
+								linecolor: "#506784",
+								ticks: "",
+							},
+						},
+						title: {
+							x: 0.05,
+						},
+						updatemenudefaults: {
+							bgcolor: "#506784",
+							borderwidth: 0,
+						},
+						xaxis: {
+							automargin: true,
+							gridcolor: "#283442",
+							linecolor: "#506784",
+							ticks: "",
+							title: {
+								standoff: 15,
+							},
+							zerolinecolor: "#283442",
+							zerolinewidth: 2,
+						},
+						yaxis: {
+							automargin: true,
+							gridcolor: "#283442",
+							linecolor: "#506784",
+							ticks: "",
+							title: {
+								standoff: 15,
+							},
+							zerolinecolor: "#283442",
+							zerolinewidth: 2,
+						},
+					},
+				};
 				const GradeExamCount = {
 					math: [],
 					science: [],
@@ -1029,14 +1596,40 @@
 							result = "yellow";
 							break;
 						case PREREQUISITE_NONE:
-							result = LIGHT_GREY
-							break
+							result = LIGHT_GREY;
+							break;
+						default:
+							break;
+					}
+					return result;
+				}
+				function convertPrerequisiteTypeToColorDark(pretype) {
+					if (!isDarkMode) {
+						return convertPrerequisiteTypeToColorLight(pretype);
+					}
+					let result = "";
+					switch (pretype) {
+						case PREREQUISITE_REQUIRED:
+							result = "#aa4444";
+							break;
+						case PREREQUISITE_OR:
+							result = "#4444aa";
+							break;
+						case PREREQUISITE_RECOMMENDED:
+							result = "#aaaa44";
+							break;
+						case PREREQUISITE_NONE:
+							result = LIGHT_GREY;
+							break;
 						default:
 							break;
 					}
 					return result;
 				}
 				function convertPrerequisiteTypeToColorLight(pretype) {
+					if (isDarkMode) {
+						return convertPrerequisiteTypeToColorDark(pretype);
+					}
 					let result = "";
 					switch (pretype) {
 						case PREREQUISITE_REQUIRED:
@@ -1049,8 +1642,8 @@
 							result = "#ffffaa";
 							break;
 						case PREREQUISITE_NONE:
-							result = LIGHT_GREY
-							break
+							result = LIGHT_GREY;
+							break;
 						default:
 							break;
 					}
@@ -1069,10 +1662,10 @@
 					return objs;
 				}
 				var ttp = [];
-				function preSearch(inname, prerequisites, prerequisite_types, ueph=false, r = 0) {
+				function preSearch(inname, prerequisites, prerequisite_types, ueph = false, r = 0) {
 					let adding = [];
 					if (prerequisites.length === 0 && ueph) {
-						return [["No Prerequisite",inname, PREREQUISITE_NONE]]
+						return [["No Prerequisite", inname, PREREQUISITE_NONE]];
 					}
 					for (let i = 0; i < prerequisites.length; i++) {
 						let adds = [prerequisites[i], inname, prerequisite_types[i]];
@@ -1115,6 +1708,7 @@
 							r: 0,
 							b: 0,
 						},
+						template: isDarkMode ? template : {},
 					};
 					var appendData = [];
 					try {
@@ -1221,8 +1815,8 @@
 				}
 				function coursePrerequisitesMet(course, just_or = false) {
 					if (course === undefined) {
-						ERep.Log("It appears that a undefined course was passed to check Pre-Req's")
-						return 0
+						ERep.Log("It appears that a undefined course was passed to check Pre-Req's");
+						return 0;
 					}
 					let presOrComplete = false;
 					let containedOr = false;
@@ -1351,7 +1945,7 @@
 						e.currentTarget.lastChild.firstChild.remove();
 					}
 					PropagateTakenCourses();
-					PropagateCourseChart()
+					PropagateCourseChart();
 				}
 				function PropagateTakenCourseSearchResults() {
 					document.getElementById("addcompletesugglist").innerHTML = "";
@@ -1429,9 +2023,9 @@
 								${creds}
 							</div>
 						</div>
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-							<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-							<path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" id="trash">
+							<path id="trash" d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+							<path id="trash" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
 						</svg>`;
 						let temp = document.createElement("li");
 						temp.innerHTML = tmp;
@@ -1440,14 +2034,14 @@
 							Courses.findIndex((e) => {
 								return e === takenCourses[i];
 							});
-						temp.className = "tcf"
+						temp.className = "tcf";
 						temp.addEventListener("click", (e) => {
-							if (e.target.id === "") {
-								console.log(i)
-								takenCourses.splice(i,1)
-								PropagateTakenCourseSearchResults()
-								PropagateTakenCourses()
-								PropagateCourseChart()
+							if (e.target.id === "trash") {
+								console.log(i);
+								takenCourses.splice(i, 1);
+								PropagateTakenCourseSearchResults();
+								PropagateTakenCourses();
+								PropagateCourseChart();
 							} else {
 								showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]);
 							}
@@ -1494,10 +2088,24 @@
 						document.getElementById("infobox").style.display = "none";
 					});
 					document.getElementById("creditFilter").addEventListener("change", () => {
-						errorHandle(PropagateCourseChart)
-					})
+						errorHandle(PropagateCourseChart);
+					});
+					document.getElementById("darkLightToggle").addEventListener("change", (e) => {
+						if (e.target.checked) {
+							document.documentElement.setAttribute("data-theme", "dark");
+							isDarkMode = true;
+						} else {
+							document.documentElement.setAttribute("data-theme", "light");
+							isDarkMode = false;
+						}
+						PropagateTakenCourses();
+						PropagateCourseChart();
+					});
+                    if (isDarkMode) {
+                        document.getElementById("darkLightToggle").checked = true;
+                    }
 					errorHandle(CalculateDiploma);
-					errorHandle(PropagateCourseChart)
+					errorHandle(PropagateCourseChart);
 				}
 				function CalculateDiploma() {
 					let e = (id, value) => {
@@ -1561,20 +2169,20 @@
 				}
 				function FilterCourse(course) {
 					if (course === undefined) {
-						return false
+						return false;
 					}
-					let selectedCredit = document.getElementById("creditFilter").value
-					let creditText = convertCreditToText(course.credits[0][0])
+					let selectedCredit = document.getElementById("creditFilter").value;
+					let creditText = convertCreditToText(course.credits[0][0]);
 					if (selectedCredit != "Any Credit") {
 						if (selectedCredit != creditText) {
 							if (selectedCredit != "Music") {
-								return true
+								return true;
 							} else if (creditText != "Music (S Dev.)" && creditText != "Music (K/A Dev.)") {
-								return true
+								return true;
 							}
 						}
 					}
-					return false
+					return false;
 				}
 				function PropagateCourseChart() {
 					var layout = {
@@ -1587,12 +2195,20 @@
 							r: 10,
 							b: 10,
 						},
+						template: isDarkMode ? template : {},
 					};
 					var appendData = [];
 					try {
 						ttp = [];
 						for (let i = 0; i < Courses.length; i++) {
-							appendData.push(...preSearch(Courses[i].name, Courses[i].prerequisites, Courses[i].prerequisite_types, true));
+							appendData.push(
+								...preSearch(
+									Courses[i].name,
+									Courses[i].prerequisites,
+									Courses[i].prerequisite_types,
+									true
+								)
+							);
 						}
 					} catch (e2) {
 						presentError(e2, e2, " - Data Parsing");
@@ -1608,37 +2224,34 @@
 							return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
 						});
 						let inCourseID = Courses.findIndex((e) => {
-										return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
-									})
+							return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
+						});
 						if (FilterCourse(Courses[inCourseID])) {
-							continue
+							continue;
 						}
 						let greyify = false;
 						if (inID === -1) {
 							let taken =
-							takenCourses.findIndex((e) => {
-								return e.name === appendData[i][0];
-							}) === -1;
+								takenCourses.findIndex((e) => {
+									return e.name === appendData[i][0];
+								}) === -1;
 							label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
-							let or_check = coursePrerequisitesMet(
-								Courses[inCourseID],
-								true
-								);
-								if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
-									color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
-									if (taken) {
-										greyify = true;
-									}
-								} else {
-									color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+							let or_check = coursePrerequisitesMet(Courses[inCourseID], true);
+							if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
+								color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
+								if (taken) {
+									greyify = true;
 								}
-								inID = label.length - 1;
+							} else {
+								color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
 							}
-							var outID = label.findIndex((e) => {
-								return e === appendData[i][1] || e === appendData[i][1] + " &#10003;";
-							});
-							if (outID === -1) {
-								let taken =
+							inID = label.length - 1;
+						}
+						var outID = label.findIndex((e) => {
+							return e === appendData[i][1] || e === appendData[i][1] + " &#10003;";
+						});
+						if (outID === -1) {
+							let taken =
 								takenCourses.findIndex((e) => {
 									return e.name === appendData[i][1];
 								}) === -1;
@@ -1688,14 +2301,18 @@
 						//arrangement: 'snap',
 						hoverinfo: false,
 					};
-					var data = [data]
+					var data = [data];
 					Plotly.react("allc", data, layout, {
 						scrollZoom: true,
 						responsive: true,
 						modebar_add: ["zoom", "pan"],
 					});
 				}
-				/*
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute("data-theme", "dark");
+                    isDarkMode = true;
+                }
+                /*
 				google.charts.load("current", { packages: ["sankey"] });
 				google.charts.setOnLoadCallback(drawChart);
 				function drawChart() {
@@ -1780,12 +2397,40 @@
 			}
 		</script>
 		<style>
+			:root {
+                color-scheme: light;
+				--mainBackground: #ffffff;
+				--mainTextColor: #000000;
+				--textColorLabel: #444444;
+				--transparentBase: #ffffff3d;
+				--transparentLike: #70707011;
+				--border: #cccccc;
+				--border1: #adadad;
+				--shadow1: #cccccc;
+				--shadow2: #6b6b6b;
+				--shadow3: #bbbbbb;
+			}
+			[data-theme="dark"] {
+                color-scheme: dark;
+				--mainBackground: #232329;
+				--mainTextColor: #ffffff;
+				--textColorLabel: #cccccc;
+				--transparentBase: #2323293d;
+				--transparentLike: #ffffff11;
+				--border: #444444;
+				--border1: #313131;
+				--shadow1: #444444;
+				--shadow2: #2e2e2e;
+				--shadow3: #272727;
+			}
 			body {
 				margin: 0px 20px;
 				overflow-x: hidden;
-				overflow-y: scroll;
+				overflow-y: auto;
 				font-family: Verdana, Geneva, Tahoma, sans-serif;
 				padding-bottom: 50px;
+				background-color: var(--mainBackground);
+				color: var(--mainTextColor);
 			}
 			/*
 			#sankey_basic {
@@ -1823,7 +2468,7 @@
 				transform: translate(-50%, -50%);
 				padding: 20px 50px;
 				margin: 50px 50px;
-				border: #cccccc solid 1px;
+				border: var(--border) solid 1px;
 				border-radius: 10px;
 				box-shadow: #de6c6c 0px 0px 20px 0px;
 				display: grid;
@@ -1849,7 +2494,7 @@
 			}
 			pre {
 				background-color: #0f0f0f;
-				border: #bababa solid 2px;
+				border: var(--border) solid 2px;
 				border-radius: 10px;
 				text-align: left;
 				color: #ffffff;
@@ -1859,7 +2504,7 @@
 			}
 			#errorbox > p > span {
 				background-color: #191919;
-				border: #bababa solid 2px;
+				border: var(--border) solid 2px;
 				border-radius: 10px;
 				text-align: center;
 				color: #ffffff;
@@ -1875,11 +2520,11 @@
 				transform: translate(-50%, -50%);
 				padding: 20px 50px;
 				margin: 50px 50px;
-				border: #cccccc solid 1px;
+				border: var(--border) solid 1px;
 				border-radius: 10px;
-				box-shadow: #6b6b6b 0px 0px 20px 0px;
+				box-shadow: var(--shadow2) 0px 0px 20px 0px;
 				z-index: 10000;
-				background: #ffffff11;
+				background: var(--transparentBase);
 				backdrop-filter: blur(20px);
 				-webkit-backdrop-filter: blur(20px);
 				display: flex;
@@ -1888,16 +2533,17 @@
 			button {
 				border: #0084ff solid 1px;
 				border-radius: 10px;
-				background-color: #ffffff;
+				background-color: var(--mainBackground);
 				padding: 10px 15px;
-				box-shadow: #bbbbbb 0px 0px 10px 0px;
+				box-shadow: var(--shadow3) 0px 0px 10px 0px;
 				transition: box-shadow 0.5s;
+				color: var(--mainTextColor);
 			}
 			button:hover {
 				box-shadow: #8d8d8d 0px 0px 10px 0px;
 			}
 			button:disabled {
-				color: #000000;
+				color: var(--mainTextColor);
 				opacity: 0.6;
 			}
 			input,
@@ -1906,32 +2552,33 @@
 			}
 			label {
 				font-size: 12.5px;
-				color: #444444;
+				color: var(--textColorLabel);
 			}
 			input {
-				border: #adadad solid 1px;
+				border: var(--border1) solid 1px;
 				border-radius: 10px;
-				background-color: #ffffff;
+				background-color: var(--mainBackground);
 				padding: 10px;
 				margin-bottom: 10px;
 				margin-top: 5px;
-				box-shadow: #cccccc 0px 0px 10px 0px;
+				box-shadow: var(--shadow1) 0px 0px 10px 0px;
 				transition: border 0.2s;
+				color: var(--mainTextColor);
 			}
 			input:focus {
 				outline: none;
 				border: #0084ff solid 1px;
 			}
 			#addcompletesugg {
-				border: #adadad solid 1px;
+				border: var(--border1) solid 1px;
 				border-radius: 10px;
-				background-color: #ffffff3d;
+				background-color: var(--transparentBase);
 				backdrop-filter: blur(5px);
 				-webkit-backdrop-filter: blur(5px);
 				padding: 10px;
 				margin-bottom: 10px;
 				margin-top: 5px;
-				box-shadow: #cccccc 0px 0px 10px 0px;
+				box-shadow: var(--shadow1) 0px 0px 10px 0px;
 				width: 300px;
 			}
 			#addcompletesugg > div {
@@ -1943,26 +2590,26 @@
 				padding: 0px 0px 10px 10px;
 				font-weight: normal;
 				width: calc(100% + 10px);
-				border-bottom: #adadad solid 1px;
+				border-bottom: var(--border1) solid 1px;
 			}
 			#addcompletesugglist,
 			ul {
-				overflow-y: scroll;
+				overflow-y: auto;
 				overflow-x: visible;
 				min-height: 200px;
-				max-height: 70vh;
+				max-height: 40vh;
 				list-style-type: none;
 				padding: 0;
 				margin: 0;
 				padding-top: 10px;
 			}
 			ul > li {
-				border: #cccccc solid 1px;
+				border: var(--border) solid 1px;
 				border-radius: 5px;
 				margin-bottom: 10px;
 				padding: 5px;
 				cursor: pointer;
-				background-color: #ffffff30;
+				background-color: var(--transparentBase);
 				backdrop-filter: blur(5px);
 				-webkit-backdrop-filter: blur(5px);
 				transition: all 0.1s;
@@ -1975,7 +2622,7 @@
 			ul > li > div > h5 {
 				margin: 0px;
 				font-size: 15px;
-				color: #000000;
+				color: var(--mainTextColor);
 				display: flex;
 				flex-wrap: wrap;
 			}
@@ -1988,10 +2635,12 @@
 				gap: 5px;
 				color: #ff0000;
 			}
-			ul > li.tcf, ul > li > div.tcf, ul > li > div > div.tcf  {
+			ul > li.tcf,
+			ul > li > div.tcf,
+			ul > li > div > div.tcf {
 				display: flex;
 				gap: 5px;
-				color: #575757;
+				color: var(--textColorLabel);
 				font-size: 12.5px;
 				overflow-x: scroll;
 				align-items: center;
@@ -2000,7 +2649,9 @@
 				-ms-overflow-style: none;
 				scrollbar-width: none;
 			}
-			ul > li.tcf::-webkit-scrollbar, ul > li > div.tcf::-webkit-scrollbar, ul > li > div > div.tcf::-webkit-scrollbar {
+			ul > li.tcf::-webkit-scrollbar,
+			ul > li > div.tcf::-webkit-scrollbar,
+			ul > li > div > div.tcf::-webkit-scrollbar {
 				display: none;
 			}
 			ul > li.tcf {
@@ -2052,7 +2703,7 @@
 			#takenCourses > p {
 				margin: 10px 0px;
 				text-align: center;
-				color: #727272;
+				color: var(--textColorLabel);
 				font-style: oblique;
 			}
 			#addcompleteclose,
@@ -2136,9 +2787,9 @@
 				display: flex;
 			}
 			.diploma {
-				border: #cccccc solid 1px;
+				border: var(--border) solid 1px;
 				border-radius: 10px;
-				background: #ffffff11;
+				background: var(--transparentLike);
 				backdrop-filter: blur(20px);
 				-webkit-backdrop-filter: blur(20px);
 				padding: 20px;
@@ -2156,7 +2807,7 @@
 			}
 			.diploma > div > label {
 				font-size: 15px;
-				color: #000000;
+				color: var(--mainTextColor);
 			}
 			.failed {
 				color: #ff0000;
@@ -2188,6 +2839,59 @@
 			#allc {
 				height: 400px;
 				width: 100%;
+			}
+            #darkLightToggleContainer {
+                display: flex;
+                align-items: center;
+                align-content: center;
+                gap: 10px;
+                margin: 20px 0px;
+            }
+			.switch {
+				position: relative;
+				display: inline-block;
+				width: 60px;
+				height: 34px;
+			}
+			.switch input {
+				opacity: 0;
+				width: 0;
+				height: 0;
+			}
+			.slider {
+				position: absolute;
+				cursor: pointer;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background-color: #ccc;
+				-webkit-transition: 0.4s;
+				transition: 0.4s;
+                border-radius: 34px;
+			}
+			.slider:before {
+				position: absolute;
+				content: "";
+				height: 26px;
+				width: 26px;
+				left: 4px;
+				bottom: 4px;
+				background-color: white;
+				-webkit-transition: 0.4s;
+				transition: 0.4s;
+                border-radius: 50%;
+			}
+			input:checked + .slider {
+				background-color: #2196f3;
+			}
+			input:focus + .slider {
+				box-shadow: 0 0 1px #2196f3;
+			}
+			input:checked + .slider:before {
+				-webkit-transform: translateX(26px);
+				-ms-transform: translateX(26px);
+				transform: translateX(26px);
 			}
 		</style>
 	</head>
@@ -2480,8 +3184,15 @@
 				</div>
 			</div>
 		</div>
+		<div id="darkLightToggleContainer">
+			<p>Dark Mode</p>
+			<label class="switch">
+				<input type="checkbox" id="darkLightToggle" />
+				<span class="slider round"></span>
+			</label>
+		</div>
 		<footer>
-			Version 0.1 Alpha (Build <span id="buildid">1172023225617</span>) -
+			Version 0.1 Alpha (Build <span id="buildid">1111202311557</span>) -
 			<a href="https://github.com/SGOTI2/course">Github</a> -
 			<a href="https://github.com/SGOTI2/course/issues">Issues</a>
 		</footer>
