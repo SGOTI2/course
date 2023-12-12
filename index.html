@@ -2101,6 +2101,10 @@
 						PropagateTakenCourses();
 						PropagateCourseChart();
 					});
+					var gradeFilters = document.getElementsByClassName("glfs")
+					for (let gradeLevelFilterIndex = 0; gradeLevelFilterIndex < gradeFilters.length; gradeLevelFilterIndex++) {
+						
+					}
                     if (isDarkMode) {
                         document.getElementById("darkLightToggle").checked = true;
                     }
@@ -2400,6 +2404,8 @@
 			:root {
                 color-scheme: light;
 				--mainBackground: #ffffff;
+				--bgSolidColor: #f9f9f9;
+				--bgSolidColor2: #e4e4e4;
 				--mainTextColor: #000000;
 				--textColorLabel: #444444;
 				--transparentBase: #ffffff3d;
@@ -2414,6 +2420,8 @@
                 color-scheme: dark;
 				--mainBackground: #232329;
 				--mainTextColor: #ffffff;
+				--bgSolidColor: #28282d;
+				--bgSolidColor2: #414146;
 				--textColorLabel: #cccccc;
 				--transparentBase: #2323293d;
 				--transparentLike: #ffffff11;
@@ -2893,6 +2901,34 @@
 				-ms-transform: translateX(26px);
 				transform: translateX(26px);
 			}
+			#filters {
+				display: flex;
+				gap: 20px;
+			}
+			#gradeLevelFiltering {
+				display: flex;
+				padding: 5px;
+				gap: 5px;
+				background-color: var(--bgSolidColor);
+				border: var(--border) solid 1px;
+				border-radius: 5px;
+			}
+			#gradeLevelFiltering > label {
+				display: flex;
+				align-items: center;
+				align-content: center;
+				justify-content: center;
+			}
+			#gradeLevelFiltering > label > input {
+				display: none;
+			}
+			#gradeLevelFiltering > label > span.glfs {
+				padding: 5px;
+				border-radius: 5px;
+			}
+			input:checked + .glfs {
+				background-color: var(--bgSolidColor2);
+			}
 		</style>
 	</head>
 	<body>
@@ -3041,7 +3077,7 @@
 			<div class="header">
 				<h2>All Courses</h2>
 			</div>
-			<div>
+			<div id="filters">
 				<select id="creditFilter">
 					<option>Any Credit</option>
 					<option>Math</option>
@@ -3051,6 +3087,28 @@
 					<option>Health</option>
 					<option>P.E.</option>
 				</select>
+				<div id="gradeLevelFiltering">
+					<label>
+						<input type="checkbox">
+						<span class="glfs" id="any">Any Grade</span>
+					</label>
+					<label>
+						<input type="checkbox">
+						<span class="glfs" id="g9">9th</span>
+					</label>
+					<label>
+						<input type="checkbox">
+						<span class="glfs" id="g10">10th</span>
+					</label>
+					<label>
+						<input type="checkbox">
+						<span class="glfs" id="g11">11th</span>
+					</label>
+					<label>
+						<input type="checkbox">
+						<span class="glfs" id="g12">12th</span>
+					</label>
+				</div>
 			</div>
 			<div id="allc"></div>
 			<legend id="prelegend">
