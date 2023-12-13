@@ -1922,8 +1922,53 @@
 						GeneratePrerequisiteGraph(course);
 					});
 				}
-				function addTakenCourse(e) {
-					let cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])];
+				function checkIfEsr(course) {
+					switch (course.cid) {
+						case "0406":
+							return [true, MATH_CREDIT]
+						case "0411":
+							return [true, MATH_CREDIT]
+						case "0442":
+							return [true, MATH_CREDIT]
+						case "0440":
+							return [true, MATH_CREDIT]
+						case "0443":
+							return [true, MATH_CREDIT]
+						default:
+							return [false, 0]
+					}
+				}
+				function pushRes(cc, score, type) {
+					let addingData = [cc.cid, score]
+					switch (type) {
+						case MATH_CREDIT:
+							GradeExamCount.math.push(addingData)
+							return
+					}
+				}
+				async function promptForRes(cc) {
+					let checkResult = checkIfEsr(cc)
+					if (!checkResult[0]) {
+						return;
+					}
+					return new Promise((resolve) => {
+						document.getElementById("res").style.display = "block";
+						let elem = document.getElementById("rescalc");
+						elem.addEventListener("click", () => {
+							let input = document.getElementById("resinp")
+							let matched = input.value.match(/\d+/g)
+							let out = ""
+							for (let i = 0; i < matched.length; i++) {
+								out += parseInt(matched[i])
+							}
+							pushRes(cc, out, checkResult[1])
+							document.getElementById("res").style.display = "none";
+							resolve("")
+						}, { once: true })
+					})
+				}
+				async function addTakenCourse(e) {
+					var cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])];
 					if (e.target.id === "ell") {
 						showCourse(cc);
 						return;
@@ -1933,9 +1978,12 @@
 							return e === cc;
 						}) === -1
 					) {
+						var ev = e.currentTarget;
+						await promptForRes(cc);
 						takenCourses.push(cc);
-						e.currentTarget.lastChild.innerHTML =
-							CHECKMARK_SVG + e.currentTarget.lastChild.innerHTML;
+						ev.lastChild.innerHTML = CHECKMARK_SVG + ev.lastChild.innerHTML;
+						PropagateTakenCourses();
+						PropagateCourseChart();
 					} else {
 						takenCourses.splice(
 							takenCourses.findIndex((e) => {
@@ -1944,9 +1992,9 @@
 							1
 						);
 						e.currentTarget.lastChild.firstChild.remove();
+						PropagateTakenCourses();
+						PropagateCourseChart();
 					}
-					PropagateTakenCourses();
-					PropagateCourseChart();
 				}
 				function PropagateTakenCourseSearchResults() {
 					document.getElementById("addcompletesugglist").innerHTML = "";
@@ -2854,6 +2902,7 @@
 			}
 			#res {
 				display: block;
+				z-index: 500000;
 			}
 			#res > h2 {
 				margin-bottom: 5px;
@@ -2993,8 +3042,8 @@
 		<div id="res" style="display: none">
 			<h2>Regents Exam Score</h2>
 			<label>Required to Calculate Diploma Progress</label>
-			<input type="text" />
-			<button disabled>Calculate</button>
+			<input type="text" placeholder="0%" id="resinp"/>
+			<button id="rescalc">Calculate</button>
 		</div>
 		<div id="addcompletebox" style="display: none">
 			<div>
