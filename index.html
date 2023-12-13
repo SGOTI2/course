@@ -2101,9 +2101,11 @@
 						PropagateTakenCourses();
 						PropagateCourseChart();
 					});
-					var gradeFilters = document.getElementsByClassName("glfs")
+					var gradeFilters = document.getElementsByClassName("glfi")
 					for (let gradeLevelFilterIndex = 0; gradeLevelFilterIndex < gradeFilters.length; gradeLevelFilterIndex++) {
-						
+						gradeFilters[gradeLevelFilterIndex].addEventListener("change", (e) => {
+							ERep.Log("Selected "+e.target.checked)
+						})
 					}
                     if (isDarkMode) {
                         document.getElementById("darkLightToggle").checked = true;
@@ -3089,24 +3091,24 @@
 				</select>
 				<div id="gradeLevelFiltering">
 					<label>
-						<input type="checkbox">
-						<span class="glfs" id="any">Any Grade</span>
+						<input type="checkbox" id="any" class="glfi">
+						<span class="glfs">Any Grade</span>
 					</label>
 					<label>
-						<input type="checkbox">
-						<span class="glfs" id="g9">9th</span>
+						<input type="checkbox" id="g9" class="glfi">
+						<span class="glfs">9th</span>
 					</label>
 					<label>
-						<input type="checkbox">
-						<span class="glfs" id="g10">10th</span>
+						<input type="checkbox" id="g10" class="glfi">
+						<span class="glfs">10th</span>
 					</label>
 					<label>
-						<input type="checkbox">
-						<span class="glfs" id="g11">11th</span>
+						<input type="checkbox" id="g11" class="glfi">
+						<span class="glfs">11th</span>
 					</label>
 					<label>
-						<input type="checkbox">
-						<span class="glfs" id="g12">12th</span>
+						<input type="checkbox" id="g12" class="glfi">
+						<span class="glfs">12th</span>
 					</label>
 				</div>
 			</div>
