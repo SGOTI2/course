@@ -1505,6 +1505,7 @@
 				const LIGHT_GREEN = "#77ff7733";
 				const LIGHT_GREY = "#aaaaaa33";
 				var takenCourses = [];
+				var filterGrades = [9,10,11,12]
 				function convertCreditToText(credit) {
 					let result = "Unknown";
 					switch (credit) {
@@ -2101,12 +2102,32 @@
 						PropagateTakenCourses();
 						PropagateCourseChart();
 					});
-					var gradeFilters = document.getElementsByClassName("glfi")
-					for (let gradeLevelFilterIndex = 0; gradeLevelFilterIndex < gradeFilters.length; gradeLevelFilterIndex++) {
-						gradeFilters[gradeLevelFilterIndex].addEventListener("change", (e) => {
-							ERep.Log("Selected "+e.target.checked)
+					let gradeFilters = document.getElementsByClassName("glfi")
+					// GLFI = Grade Level Filter Index
+					for (let glfi = 0; glfi < gradeFilters.length; glfi++) {
+						gradeFilters[glfi].addEventListener("change", (e) => {
+							filterGrades = []
+							let gradeFilters = document.getElementsByClassName("glfi")
+							let overrideFalse = false
+							if (gradeFilters[0].checked && e.target.checked && e.target != gradeFilters[0]) {
+								gradeFilters[0].checked = false
+							} else if (gradeFilters[0].checked) {
+								filterGrades = [9,10,11,12]
+								overrideFalse = true
+							}
+							for (let glfi = 0; glfi < gradeFilters.length; glfi++) {
+								if (overrideFalse && glfi != 0) {
+									gradeFilters[glfi].checked = false
+									continue
+								}
+								if (gradeFilters[glfi].checked) {
+									filterGrades.push(8+glfi)
+								}
+							}
+							PropagateCourseChart()
 						})
 					}
+					gradeFilters[0].checked = true
                     if (isDarkMode) {
                         document.getElementById("darkLightToggle").checked = true;
                     }
@@ -2188,6 +2209,14 @@
 							}
 						}
 					}
+					var continued = false
+					for (let i = 0; i < course.grade.length; i++) {
+						if (filterGrades.findIndex((e) => e === course.grade[i]) != -1) {
+							continued = true
+							break
+						}
+					}
+					if (!continued) return true
 					return false;
 				}
 				function PropagateCourseChart() {
@@ -2406,8 +2435,7 @@
 			:root {
                 color-scheme: light;
 				--mainBackground: #ffffff;
-				--bgSolidColor: #f9f9f9;
-				--bgSolidColor2: #e4e4e4;
+				--bgSolidColor: #e4e4e4;
 				--mainTextColor: #000000;
 				--textColorLabel: #444444;
 				--transparentBase: #ffffff3d;
@@ -2422,8 +2450,7 @@
                 color-scheme: dark;
 				--mainBackground: #232329;
 				--mainTextColor: #ffffff;
-				--bgSolidColor: #28282d;
-				--bgSolidColor2: #414146;
+				--bgSolidColor: #414146;
 				--textColorLabel: #cccccc;
 				--transparentBase: #2323293d;
 				--transparentLike: #ffffff11;
@@ -2906,14 +2933,43 @@
 			#filters {
 				display: flex;
 				gap: 20px;
+				height: 3rem;
+				margin-bottom: 1rem;
+			}
+			#filters > .divider {
+				background-color: var(--bgSolidColor);
+				width: 1px;
+				height: 2.5rem;
+				margin-top: 0.25rem;
+			}
+			select {
+				appearance: none;
+				-webkit-appearance: none;
+				padding: 1rem;
+				border: none;
+				color: var(--mainTextColor);
+				cursor: pointer;
+				width: 100px;
+				background-color: var(--mainBackground);
+			}
+			.selectContainer {
+				position: relative;
+			}
+			.selectContainer::after {
+				--size: .3rem;
+				content: "";
+				position: absolute;
+				right: 0px;
+				pointer-events: none;
+				border-left: var(--size) solid transparent;
+				border-right: var(--size) solid transparent;
+				border-top: var(--size) solid var(--textColorLabel);
+				top: calc(1.5rem - var(--size) / 2);
 			}
 			#gradeLevelFiltering {
 				display: flex;
-				padding: 5px;
+				padding: 5px 10px;
 				gap: 5px;
-				background-color: var(--bgSolidColor);
-				border: var(--border) solid 1px;
-				border-radius: 5px;
 			}
 			#gradeLevelFiltering > label {
 				display: flex;
@@ -2929,7 +2985,7 @@
 				border-radius: 5px;
 			}
 			input:checked + .glfs {
-				background-color: var(--bgSolidColor2);
+				background-color: var(--bgSolidColor);
 			}
 		</style>
 	</head>
@@ -3080,15 +3136,18 @@
 				<h2>All Courses</h2>
 			</div>
 			<div id="filters">
-				<select id="creditFilter">
-					<option>Any Credit</option>
-					<option>Math</option>
-					<option>English</option>
-					<option>Science</option>
-					<option>Music</option>
-					<option>Health</option>
-					<option>P.E.</option>
-				</select>
+				<div class="selectContainer">
+					<select id="creditFilter">
+						<option>Any Credit</option>
+						<option>Math</option>
+						<option>English</option>
+						<option>Science</option>
+						<option>Music</option>
+						<option>Health</option>
+						<option>P.E.</option>
+					</select>
+				</div>
+				<div class="divider"></div>
 				<div id="gradeLevelFiltering">
 					<label>
 						<input type="checkbox" id="any" class="glfi">
@@ -3111,6 +3170,7 @@
 						<span class="glfs">12th</span>
 					</label>
 				</div>
+				<div class="divider"></div>
 			</div>
 			<div id="allc"></div>
 			<legend id="prelegend">
