@@ -293,7 +293,7 @@ svg.bi-trash:hover {
     fill: #ff0000;
     background-color: #ff000022;
 }
-ul > li > div > svg.div {
+ul > li > div > svg.div, ul > li > div > div > svg.div {
     fill: #ffffff;
     background-color: rgb(136, 136, 136);
     border-radius: 50%;

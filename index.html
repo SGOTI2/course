@@ -17,7 +17,7 @@
 			const X_SVG =
 				'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>';
 			const DIVIDER_SVG =
-				'<svg preserveAspectRatio="none" width="4" height="4" class="div" fill="currentColor" viewBox="0 0 4 4"><circle></circle></svg>';
+				'<svg preserveAspectRatio="none" width="4" height="4" class="div" fill="currentColor" viewBox="0 0 4 4"></svg>';
 			const WARNING_SVG =
 				'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>';
 			const LIGHT_GREEN = "#77ff7733";
@@ -72,18 +72,25 @@
 				}
 				var takenCourses = [];
 				var filterGrades = [9,10,11,12]
-				// 
+				/**
+				 * Search Courses for a course
+				 * 
+				 * Either name, cid, or both can be passed to find a course
+				 * @param {string} name - The name of the course to search for
+				 * @param {string} cid - The courseID of the course to search for
+				 * @returns {course} - A course object (from courseData)
+				 */
 				function searchCourses(name = "", cid = "") {
-					let objs = [];
-					for (let i = 0; i < Courses.length; i++) {
+					let foundCourses = [];
+					for (let i = 0; i < Courses.length; i++) { // Iterate through courses
 						if (
 							(Courses[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
 							(Courses[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "")
-						) {
-							objs.push(Courses[i]);
+						) { // Test if the name or cid matches
+							foundCourses.push(Courses[i]); // Add course to found courses
 						}
 					}
-					return objs;
+					return foundCourses;
 				}
 				var scannedCourses = [];
 				/**
@@ -93,7 +100,7 @@
 				 * @param {string} inname - The name of the course
 				 * @param {[String]} prerequisites - A list of prerequisites to search through
 				 * @param {[PREREQUISITE]} prerequisite_types - A list of prerequisites types that match prerequisites argument
-				 * @param {boolean} displayNoPrerequisite - Deprecated (Default False): Should the 'No Prerequisite' be returned
+				 * @param {boolean} displayNoPrerequisite - Should the 'No Prerequisite' be returned
 				 * @param {number} recursion - The depth of recursion that the function is at, prevents infinite loops
 				 * @returns {[[string, string, number]]} - Graph Relation list - [PrerequisiteName, StartingCourseName, PrerequisiteType], used for generation of graphs
 				 */
@@ -106,7 +113,7 @@
 						let prerequisite = [prerequisites[i], inname, prerequisite_types[i]]; // The value we will add if it's not already scanned
 						if (
 							scannedCourses.findIndex((e) => {
-								return e[0] === adds[0] && e[1] === adds[1] && e[2] === adds[2];
+								return e[0] === prerequisite[0] && e[1] === prerequisite[1] && e[2] === prerequisite[2];
 							}) === -1
 						) { // Test if the prerequisite matches a already scanned prerequisite
 							coursePrerequisites.push(prerequisite); // Add to course prerequisites
@@ -132,6 +139,12 @@
 					}
 					return coursePrerequisites;
 				}
+				/**
+				 * Generate the Prerequisite graph for a course and add it to the 
+				 * 
+				 * @param {course} course - The course to generate the graph for
+				 * @returns {void}
+				 */
 				function GeneratePrerequisiteGraph(course) {
 					var layout = {
 						font: {
@@ -144,11 +157,11 @@
 							b: 0,
 						},
 						template: isDarkMode ? plotly_dark : {},
-					};
-					var appendData = [];
+					}; // The layout and theme for the graph
+					var data = [];
 					try {
-						ttp = [];
-						appendData = preSearch(course.name, course.prerequisites, course.prerequisite_types);
+						scannedCourses = [];
+						data = preSearch(course.name, course.prerequisites, course.prerequisite_types);
 					} catch (e2) {
 						presentError(e2, e2, " - Data Parsing");
 					}
@@ -158,45 +171,45 @@
 					var source = [];
 					var target = [];
 					var value = [];
-					for (var i = 0; i < appendData.length; i++) {
+					for (var i = 0; i < data.length; i++) {
 						var inID = label.findIndex((e) => {
-							return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
+							return e === data[i][0] || e === data[i][0] + " &#10003;";
 						});
 						let greyify = false;
 						if (inID === -1) {
 							let taken =
 								takenCourses.findIndex((e) => {
-									return e.name === appendData[i][0];
+									return e.name === data[i][0];
 								}) === -1;
-							label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
+							label.push(taken ? data[i][0] : data[i][0] + " &#10003;");
 							let or_check = coursePrerequisitesMet(
 								Courses[
 									Courses.findIndex((e) => {
-										return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
+										return e.name === data[i][1] || e.name === data[i][1] + " &#10003;";
 									})
 								],
 								true
 							);
-							if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
+							if (or_check[0] && data[i][2] === PREREQUISITE_OR && or_check[1]) {
 								color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
 								if (taken) {
 									greyify = true;
 								}
 							} else {
-								color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+								color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN);
 							}
 							inID = label.length - 1;
 						}
 						var outID = label.findIndex((e) => {
-							return e === appendData[i][1] || e === appendData[i][1] + " &#10003;";
+							return e === data[i][1] || e === data[i][1] + " &#10003;";
 						});
 						if (outID === -1) {
 							let taken =
 								takenCourses.findIndex((e) => {
-									return e.name === appendData[i][1];
+									return e.name === data[i][1];
 								}) === -1;
-							label.push(taken ? appendData[i][1] : appendData[i][1] + " &#10003;");
-							color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+							label.push(taken ? data[i][1] : data[i][1] + " &#10003;");
+							color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN);
 							outID = label.length - 1;
 						}
 						source.push(inID);
@@ -204,13 +217,13 @@
 						let lnc = "";
 						if (
 							takenCourses.findIndex((e) => {
-								return e.name === appendData[i][0];
+								return e.name === data[i][0];
 							}) === -1
 						) {
 							if (greyify) {
 								lnc = LIGHT_GREY;
 							} else {
-								lnc = convertPrerequisiteTypeToColorLight(appendData[i][2]);
+								lnc = convertPrerequisiteTypeToColorLight(data[i][2]);
 							}
 						} else {
 							lnc = LIGHT_GREEN;
@@ -722,13 +735,14 @@
 					};
 					var appendData = [];
 					try {
-						ttp = [];
+						scannedCourses = [];
 						for (let i = 0; i < Courses.length; i++) {
 							appendData.push(
 								...preSearch(
 									Courses[i].name,
 									Courses[i].prerequisites,
-									Courses[i].prerequisite_types
+									Courses[i].prerequisite_types,
+									true
 								)
 							);
 						}
