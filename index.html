@@ -1,9 +1,34 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<script type="text/javascript">
+			const GradeExamCount = {
+				math: [],
+				science: [],
+				english: [],
+				social_studies: [],
+				additional: [],
+				world_language: [],
+			};
+			const CHECKMARK_SVG =
+				'<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="16" height="16" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>';
+			const NA_SVG =
+				'<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="16" height="16" class="bi bi-na" viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="2" rx="1"></rect></svg>';
+			const X_SVG =
+				'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>';
+			const DIVIDER_SVG =
+				'<svg preserveAspectRatio="none" width="4" height="4" class="div" fill="currentColor" viewBox="0 0 4 4"></svg>';
+			const WARNING_SVG =
+				'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>';
+			const LIGHT_GREEN = "#77ff7733";
+			const LIGHT_GREY = "#aaaaaa33";
+		</script>
 		<script src="./plotly.js"></script>
 		<script src="./erep.js"></script>
-		<script type="text/javascript">
+		<script src="./courseData.js"></script>
+		<script src="./plotlyDark.js"></script>
+		<script src="./conversion.js"></script>
+		<script type="text/javascript" defer>
 			var isDarkMode = false;
 			if (window.ERep === undefined) {
 				window.ERep = {
@@ -30,1674 +55,96 @@
 				l = true;
 				errorHandle(loadCall);
 			};
+			class NotFound extends Error {
+				constructor(message) {
+					super(message);
+				}
+			}
 			try {
-				const PREREQUISITE_AND = 1;
-				const PREREQUISITE_REQUIRED = 1;
-				const PREREQUISITE_OR = 2;
-				const PREREQUISITE_RECOMMENDED = 3;
-				const PREREQUISITE_NONE = 4;
-
-				const LOCAL_EXAM = 0;
-				const REGENTS_EXAM = 1;
-				const AP_EXAM = 2;
-				const AP_EXAM_ENCOURAGED = 3;
-				const PROJECT = 4;
-				const REGENTS_EXAM_JANUARY = 5;
-
-				const ENGLISH_CREDIT = 0;
-				const SOCIAL_STUDY_CREDIT = 1;
-				const MATH_CREDIT = 2;
-				const SCIENCE_CREDIT = 3;
-				const HEALTH_CREDIT = 4;
-
-				const MEETS_COMMENCEMENT_CREDIT = 5;
-				const MUSIC_SKILLS_DEVELOPMENT_CREDIT = 6;
-				const MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT = 7;
-				const GENERAL_MUSIC_CREDIT = 8;
-
-				const PHYSICAL_EDUCATION_CREDIT = 9;
-				const WORLD_LANGUAGE_CREDIT = 10;
-
-				const FULL_YEAR = 0;
-				const HALF_YEAR = 1;
-				const Courses = [
-					{
-						// MARK: ENGLISH
-						name: "English 9R",
-						cid: "0003",
-						grade: [9],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 1]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "English 10R",
-						cid: "0005",
-						grade: [10],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 1]],
-						prerequisites: ["English 9R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Pre-AP English 2",
-						cid: "0070",
-						grade: [10],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 1]],
-						prerequisites: ["English 9R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "English 11R",
-						cid: "0007",
-						grade: [11],
-						exams: [REGENTS_EXAM],
-						credits: [[ENGLISH_CREDIT, 1]],
-						prerequisites: ["English 10R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "AP English Language & Composition",
-						cid: "0019",
-						grade: [11],
-						exams: [REGENTS_EXAM, AP_EXAM_ENCOURAGED],
-						credits: [[ENGLISH_CREDIT, 1]],
-						prerequisites: ["English 10R", "Pre-AP English 2"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "AP Literature & Composition",
-						cid: "0020",
-						grade: [12],
-						exams: [AP_EXAM_ENCOURAGED],
-						credits: [[ENGLISH_CREDIT, 1]],
-						prerequisites: ["English 11R", "AP English Language & Composition"],
-						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "College Composition (ENG 101)",
-						cid: "0021",
-						grade: [12],
-						exams: [],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 11R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: true,
-					},
-					{
-						name: "Creative Nonfiction H",
-						cid: "0072",
-						grade: [12],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 11R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: true,
-					},
-					{
-						name: "Creative Writing",
-						cid: "0023",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 9R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Introduction to Film Studies",
-						cid: "0030",
-						grade: [10, 11, 12],
-						exams: [],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 11R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Music as Literature",
-						cid: "0097",
-						grade: [12],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 11R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Practices of Academic Writing",
-						cid: "0069",
-						grade: [12],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 11R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: true,
-					},
-					{
-						name: "Public Speaking",
-						cid: "0044",
-						grade: [10, 11, 12],
-						exams: ["Final Speech"],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 9R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Science Fiction & Fantasy",
-						cid: "0068",
-						grade: [10, 11, 12],
-						exams: [PROJECT],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 9R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Shakespeare",
-						cid: "0032",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 9R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Sports Literature",
-						cid: "0034",
-						grade: [10, 11, 12],
-						exams: [PROJECT],
-						credits: [[ENGLISH_CREDIT, 0.5]],
-						prerequisites: ["English 9R"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						// MARK: MATH
-						name: "Algebra I",
-						cid: "0406",
-						grade: [9, 10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Geometry",
-						cid: "0411",
-						grade: [9, 10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Algebra I"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Math III",
-						cid: "0410",
-						grade: [11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Geometry"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Algebra II Extended",
-						cid: "0442",
-						grade: [11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Geometry"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Algebra II",
-						cid: "0440",
-						grade: [9, 10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Geometry"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Algebra II Accelerated",
-						cid: "0443",
-						grade: [9, 10, 11, 12],
-						exams: [REGENTS_EXAM_JANUARY],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Geometry"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Pre-Calculus Accelerated",
-						cid: "0414",
-						grade: [9, 10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Geometry"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Math & Financial Applications",
-						cid: "0605",
-						grade: [11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Algebra I"],
-						prerequisite_types: [PREREQUISITE_RECOMMENDED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Pre-Calculus",
-						cid: "0416",
-						grade: [11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Algebra II", "Algebra II Accelerated", "Algebra II Extended"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Pre-Calculus Honors",
-						cid: "0417",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Algebra II", "Algebra II Accelerated", "Algebra II Extended"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Calculus H (SUPA)",
-						cid: "0433",
-						grade: [12],
-						exams: [LOCAL_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Pre-Calculus", "Pre-Calculus Honors", "Pre-Calculus Accelerated"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: true,
-					},
-					{
-						name: "AP Calculus BC",
-						cid: "0420",
-						grade: [11, 12],
-						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Pre-Calculus", "Pre-Calculus Honors", "Pre-Calculus Accelerated"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "College Statistics",
-						cid: "0449",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["Algebra II", "Algebra II Accelerated", "Algebra II Extended"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: true,
-					},
-					{
-						name: "Calculus III",
-						cid: "0432",
-						grade: [12],
-						exams: [LOCAL_EXAM],
-						credits: [[MATH_CREDIT, 1]],
-						prerequisites: ["AP Calculus BC"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: true,
-					},
-					{
-						// MARK: HEALTH
-						name: "Health I",
-						cid: "0902",
-						grade: [9, 10, 11, 12],
-						exams: [],
-						credits: [[HEALTH_CREDIT, 0.5]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Health II",
-						cid: "0903",
-						grade: [11, 12],
-						exams: [],
-						credits: [[HEALTH_CREDIT, 0.5]],
-						prerequisites: ["Health I"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Reconnecting Youth",
-						cid: "0906",
-						grade: [9, 10, 11, 12],
-						exams: [],
-						credits: [[HEALTH_CREDIT, 0.5]],
-						prerequisites: ["Counselor Recommendation"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						// MARK: MUSIC
-						name: "Concert Choir",
-						cid: "0804",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: ["Choral Experience", "Able to Match Pitch"],
-						prerequisite_types: [PREREQUISITE_RECOMMENDED, PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Chorale",
-						cid: "0808",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: ["Concert Choir", "Solo Voice"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Solo Voice",
-						cid: "0800",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Intermediate Voice",
-						cid: "0801",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
-						prerequisites: ["Solo Voice"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Advanced Voice",
-						cid: "0802",
-						grade: [11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1]],
-						prerequisites: ["Solo Voice", "Intermediate Voice", "Teacher Recommendation"],
-						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Jazz Choir",
-						cid: "0812",
-						grade: [9, 10, 11, 12],
-						exams: [],
-						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 0.5]],
-						prerequisites: ["Concert Choir", "Chorale", "Audition"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Select Treble Choir",
-						cid: "0832",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 0.25]],
-						prerequisites: ["Concert Choir", "Chorale", "Audition"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR, PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Music Theory I",
-						cid: "0846",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "AP Music Theory",
-						cid: "0847",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
-						credits: [
-							[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: ["Music Theory I", "Teacher Recommendation"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Music in Our Lives",
-						cid: "0827",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Studio Recording and Sound Engineering",
-						cid: "NONE",
-						grade: [11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT, 1]],
-						prerequisites: ["Audition", "Instructor Approval"],
-						prerequisite_types: [PREREQUISITE_OR, PREREQUISITE_OR],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Concert Band",
-						cid: "0820",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: ["Band Experience"],
-						prerequisite_types: [PREREQUISITE_RECOMMENDED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Wind Ensemble",
-						cid: "0823",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: ["Audition"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Jazz Ensemble",
-						cid: "0823",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[GENERAL_MUSIC_CREDIT, 0.5]],
-						prerequisites: [
-							"Audition",
-							"Concert Band",
-							"Wind Ensemble",
-							"Philharmonia Orchestra",
-							"Symphony Orchestra",
-						],
-						prerequisite_types: [
-							PREREQUISITE_REQUIRED,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-						],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Jazz Democracy",
-						cid: "0829",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [[GENERAL_MUSIC_CREDIT, 0.5]],
-						prerequisites: [
-							"Concert Band",
-							"Wind Ensemble",
-							"Philharmonia Orchestra",
-							"Symphony Orchestra",
-						],
-						prerequisite_types: [
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-						],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Philharmonia Orchestra",
-						cid: "0821",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: ["Orchestra Experience"],
-						prerequisite_types: [PREREQUISITE_RECOMMENDED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Symphony Orchestra",
-						cid: "0822",
-						grade: [9, 10, 11, 12],
-						exams: [LOCAL_EXAM],
-						credits: [
-							[MUSIC_SKILLS_DEVELOPMENT_CREDIT, 1],
-							[MEETS_COMMENCEMENT_CREDIT, 0],
-						],
-						prerequisites: ["Audition"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						// MARK: Physical Education
-						name: "Physical Education 9",
-						cid: "0900",
-						grade: [9],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Physical Education 10",
-						cid: "0901",
-						grade: [10],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Unified PE",
-						cid: "0983",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Yoga",
-						cid: "0988",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Adventure Learning",
-						cid: "0972",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Dance / Personal Defense",
-						cid: "0955",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Fitness for Life",
-						cid: "0955",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Golf and Racquet",
-						cid: "0953",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Lifeguarding",
-						cid: "0975",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: ["Swim Test"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Outdoor Experience",
-						cid: "0974",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Sport Education A",
-						cid: "0964",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Sport Education B",
-						cid: "0966",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [HALF_YEAR],
-						dual: false,
-					},
-					{
-						name: "Team Games A",
-						cid: "0981",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Team Games B",
-						cid: "0981",
-						grade: [11, 12],
-						exams: [],
-						credits: [[PHYSICAL_EDUCATION_CREDIT, 0.25]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						// MARK: Science
-						name: "Physical Setting: Earth Science Regents",
-						cid: "0300",
-						grade: [9, 10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: [],
-						prerequisite_types: [],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "The Living Environment Regents",
-						cid: "0300",
-						grade: [9, 10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: ["Physical Setting: Earth Science Regents"],
-						prerequisite_types: [PREREQUISITE_RECOMMENDED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Physical Setting: Chemistry Regents",
-						cid: "0311",
-						grade: [10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: ["Algebra I", "Physical Setting: Earth Science Regents"],
-						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_RECOMMENDED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "Physical Setting: Physics with Optics",
-						cid: "0319",
-						grade: [10, 11, 12],
-						exams: [REGENTS_EXAM],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: ["Algebra II"],
-						prerequisite_types: [PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: true,
-					},
-					{
-						name: "AP Environmental Science",
-						cid: "0307",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: [
-							"The Living Environment Regents",
-							"Physical Setting: Earth Science Regents",
-							"Physical Setting: Physics with Optics",
-							"Physical Setting: Chemistry Regents",
-						],
-						prerequisite_types: [
-							PREREQUISITE_REQUIRED,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-						],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "AP Biology",
-						cid: "0305",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: [
-							"The Living Environment Regents",
-							"Physical Setting: Chemistry Regents",
-						],
-						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "AP Chemistry",
-						cid: "0313",
-						grade: [10, 11, 12],
-						exams: [LOCAL_EXAM, AP_EXAM_ENCOURAGED],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: ["Physical Setting: Chemistry Regents", "Algebra I"],
-						prerequisite_types: [PREREQUISITE_REQUIRED, PREREQUISITE_REQUIRED],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-					{
-						name: "AP Physics C",
-						cid: "0320",
-						grade: [11, 12],
-						exams: [AP_EXAM_ENCOURAGED],
-						credits: [[SCIENCE_CREDIT, 1]],
-						prerequisites: [
-							"Physical Setting: Physics with Optics",
-							"Calculus H (SUPA)",
-							"AP Calculus BC",
-							"Calculus III",
-						],
-						prerequisite_types: [
-							PREREQUISITE_REQUIRED,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-							PREREQUISITE_OR,
-						],
-						length: [FULL_YEAR],
-						dual: false,
-					},
-				];
-				const template = {
-					data: {
-						barpolar: [
-							{
-								marker: {
-									line: {
-										color: "#232329",
-										width: 0.5,
-									},
-									pattern: {
-										fillmode: "overlay",
-										size: 10,
-										solidity: 0.2,
-									},
-								},
-								type: "barpolar",
-							},
-						],
-						bar: [
-							{
-								error_x: {
-									color: "#f2f5fa",
-								},
-								error_y: {
-									color: "#f2f5fa",
-								},
-								marker: {
-									line: {
-										color: "#232329",
-										width: 0.5,
-									},
-									pattern: {
-										fillmode: "overlay",
-										size: 10,
-										solidity: 0.2,
-									},
-								},
-								type: "bar",
-							},
-						],
-						carpet: [
-							{
-								aaxis: {
-									endlinecolor: "#A2B1C6",
-									gridcolor: "#506784",
-									linecolor: "#506784",
-									minorgridcolor: "#506784",
-									startlinecolor: "#A2B1C6",
-								},
-								baxis: {
-									endlinecolor: "#A2B1C6",
-									gridcolor: "#506784",
-									linecolor: "#506784",
-									minorgridcolor: "#506784",
-									startlinecolor: "#A2B1C6",
-								},
-								type: "carpet",
-							},
-						],
-						choropleth: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								type: "choropleth",
-							},
-						],
-						contourcarpet: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								type: "contourcarpet",
-							},
-						],
-						contour: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								colorscale: [
-									[0.0, "#0d0887"],
-									[0.1111111111111111, "#46039f"],
-									[0.2222222222222222, "#7201a8"],
-									[0.3333333333333333, "#9c179e"],
-									[0.4444444444444444, "#bd3786"],
-									[0.5555555555555556, "#d8576b"],
-									[0.6666666666666666, "#ed7953"],
-									[0.7777777777777778, "#fb9f3a"],
-									[0.8888888888888888, "#fdca26"],
-									[1.0, "#f0f921"],
-								],
-								type: "contour",
-							},
-						],
-						heatmapgl: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								colorscale: [
-									[0.0, "#0d0887"],
-									[0.1111111111111111, "#46039f"],
-									[0.2222222222222222, "#7201a8"],
-									[0.3333333333333333, "#9c179e"],
-									[0.4444444444444444, "#bd3786"],
-									[0.5555555555555556, "#d8576b"],
-									[0.6666666666666666, "#ed7953"],
-									[0.7777777777777778, "#fb9f3a"],
-									[0.8888888888888888, "#fdca26"],
-									[1.0, "#f0f921"],
-								],
-								type: "heatmapgl",
-							},
-						],
-						heatmap: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								colorscale: [
-									[0.0, "#0d0887"],
-									[0.1111111111111111, "#46039f"],
-									[0.2222222222222222, "#7201a8"],
-									[0.3333333333333333, "#9c179e"],
-									[0.4444444444444444, "#bd3786"],
-									[0.5555555555555556, "#d8576b"],
-									[0.6666666666666666, "#ed7953"],
-									[0.7777777777777778, "#fb9f3a"],
-									[0.8888888888888888, "#fdca26"],
-									[1.0, "#f0f921"],
-								],
-								type: "heatmap",
-							},
-						],
-						histogram2dcontour: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								colorscale: [
-									[0.0, "#0d0887"],
-									[0.1111111111111111, "#46039f"],
-									[0.2222222222222222, "#7201a8"],
-									[0.3333333333333333, "#9c179e"],
-									[0.4444444444444444, "#bd3786"],
-									[0.5555555555555556, "#d8576b"],
-									[0.6666666666666666, "#ed7953"],
-									[0.7777777777777778, "#fb9f3a"],
-									[0.8888888888888888, "#fdca26"],
-									[1.0, "#f0f921"],
-								],
-								type: "histogram2dcontour",
-							},
-						],
-						histogram2d: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								colorscale: [
-									[0.0, "#0d0887"],
-									[0.1111111111111111, "#46039f"],
-									[0.2222222222222222, "#7201a8"],
-									[0.3333333333333333, "#9c179e"],
-									[0.4444444444444444, "#bd3786"],
-									[0.5555555555555556, "#d8576b"],
-									[0.6666666666666666, "#ed7953"],
-									[0.7777777777777778, "#fb9f3a"],
-									[0.8888888888888888, "#fdca26"],
-									[1.0, "#f0f921"],
-								],
-								type: "histogram2d",
-							},
-						],
-						histogram: [
-							{
-								marker: {
-									pattern: {
-										fillmode: "overlay",
-										size: 10,
-										solidity: 0.2,
-									},
-								},
-								type: "histogram",
-							},
-						],
-						mesh3d: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								type: "mesh3d",
-							},
-						],
-						parcoords: [
-							{
-								line: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "parcoords",
-							},
-						],
-						pie: [
-							{
-								automargin: true,
-								type: "pie",
-							},
-						],
-						scatter3d: [
-							{
-								line: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								marker: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "scatter3d",
-							},
-						],
-						scattercarpet: [
-							{
-								marker: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "scattercarpet",
-							},
-						],
-						scattergeo: [
-							{
-								marker: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "scattergeo",
-							},
-						],
-						scattergl: [
-							{
-								marker: {
-									line: {
-										color: "#283442",
-									},
-								},
-								type: "scattergl",
-							},
-						],
-						scattermapbox: [
-							{
-								marker: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "scattermapbox",
-							},
-						],
-						scatterpolargl: [
-							{
-								marker: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "scatterpolargl",
-							},
-						],
-						scatterpolar: [
-							{
-								marker: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "scatterpolar",
-							},
-						],
-						scatter: [
-							{
-								marker: {
-									line: {
-										color: "#283442",
-									},
-								},
-								type: "scatter",
-							},
-						],
-						scatterternary: [
-							{
-								marker: {
-									colorbar: {
-										outlinewidth: 0,
-										ticks: "",
-									},
-								},
-								type: "scatterternary",
-							},
-						],
-						surface: [
-							{
-								colorbar: {
-									outlinewidth: 0,
-									ticks: "",
-								},
-								colorscale: [
-									[0.0, "#0d0887"],
-									[0.1111111111111111, "#46039f"],
-									[0.2222222222222222, "#7201a8"],
-									[0.3333333333333333, "#9c179e"],
-									[0.4444444444444444, "#bd3786"],
-									[0.5555555555555556, "#d8576b"],
-									[0.6666666666666666, "#ed7953"],
-									[0.7777777777777778, "#fb9f3a"],
-									[0.8888888888888888, "#fdca26"],
-									[1.0, "#f0f921"],
-								],
-								type: "surface",
-							},
-						],
-						table: [
-							{
-								cells: {
-									fill: {
-										color: "#506784",
-									},
-									line: {
-										color: "#232329",
-									},
-								},
-								header: {
-									fill: {
-										color: "#2a3f5f",
-									},
-									line: {
-										color: "#232329",
-									},
-								},
-								type: "table",
-							},
-						],
-					},
-					layout: {
-						annotationdefaults: {
-							arrowcolor: "#f2f5fa",
-							arrowhead: 0,
-							arrowwidth: 1,
-						},
-						autotypenumbers: "strict",
-						coloraxis: {
-							colorbar: {
-								outlinewidth: 0,
-								ticks: "",
-							},
-						},
-						colorscale: {
-							diverging: [
-								[0, "#8e0152"],
-								[0.1, "#c51b7d"],
-								[0.2, "#de77ae"],
-								[0.3, "#f1b6da"],
-								[0.4, "#fde0ef"],
-								[0.5, "#f7f7f7"],
-								[0.6, "#e6f5d0"],
-								[0.7, "#b8e186"],
-								[0.8, "#7fbc41"],
-								[0.9, "#4d9221"],
-								[1, "#276419"],
-							],
-							sequential: [
-								[0.0, "#0d0887"],
-								[0.1111111111111111, "#46039f"],
-								[0.2222222222222222, "#7201a8"],
-								[0.3333333333333333, "#9c179e"],
-								[0.4444444444444444, "#bd3786"],
-								[0.5555555555555556, "#d8576b"],
-								[0.6666666666666666, "#ed7953"],
-								[0.7777777777777778, "#fb9f3a"],
-								[0.8888888888888888, "#fdca26"],
-								[1.0, "#f0f921"],
-							],
-							sequentialminus: [
-								[0.0, "#0d0887"],
-								[0.1111111111111111, "#46039f"],
-								[0.2222222222222222, "#7201a8"],
-								[0.3333333333333333, "#9c179e"],
-								[0.4444444444444444, "#bd3786"],
-								[0.5555555555555556, "#d8576b"],
-								[0.6666666666666666, "#ed7953"],
-								[0.7777777777777778, "#fb9f3a"],
-								[0.8888888888888888, "#fdca26"],
-								[1.0, "#f0f921"],
-							],
-						},
-						colorway: [
-							"#636efa",
-							"#EF553B",
-							"#00cc96",
-							"#ab63fa",
-							"#FFA15A",
-							"#19d3f3",
-							"#FF6692",
-							"#B6E880",
-							"#FF97FF",
-							"#FECB52",
-						],
-						font: {
-							color: "#f2f5fa",
-						},
-						geo: {
-							bgcolor: "#232329",
-							lakecolor: "#232329",
-							landcolor: "#232329",
-							showlakes: true,
-							showland: true,
-							subunitcolor: "#506784",
-						},
-						hoverlabel: {
-							align: "left",
-						},
-						hovermode: "closest",
-						mapbox: {
-							style: "dark",
-						},
-						paper_bgcolor: "#232329",
-						plot_bgcolor: "#232329",
-						polar: {
-							angularaxis: {
-								gridcolor: "#506784",
-								linecolor: "#506784",
-								ticks: "",
-							},
-							bgcolor: "#232329",
-							radialaxis: {
-								gridcolor: "#506784",
-								linecolor: "#506784",
-								ticks: "",
-							},
-						},
-						scene: {
-							xaxis: {
-								backgroundcolor: "#232329",
-								gridcolor: "#506784",
-								gridwidth: 2,
-								linecolor: "#506784",
-								showbackground: true,
-								ticks: "",
-								zerolinecolor: "#C8D4E3",
-							},
-							yaxis: {
-								backgroundcolor: "#232329",
-								gridcolor: "#506784",
-								gridwidth: 2,
-								linecolor: "#506784",
-								showbackground: true,
-								ticks: "",
-								zerolinecolor: "#C8D4E3",
-							},
-							zaxis: {
-								backgroundcolor: "#232329",
-								gridcolor: "#506784",
-								gridwidth: 2,
-								linecolor: "#506784",
-								showbackground: true,
-								ticks: "",
-								zerolinecolor: "#C8D4E3",
-							},
-						},
-						shapedefaults: {
-							line: {
-								color: "#f2f5fa",
-							},
-						},
-						sliderdefaults: {
-							bgcolor: "#C8D4E3",
-							bordercolor: "#232329",
-							borderwidth: 1,
-							tickwidth: 0,
-						},
-						ternary: {
-							aaxis: {
-								gridcolor: "#506784",
-								linecolor: "#506784",
-								ticks: "",
-							},
-							baxis: {
-								gridcolor: "#506784",
-								linecolor: "#506784",
-								ticks: "",
-							},
-							bgcolor: "#232329",
-							caxis: {
-								gridcolor: "#506784",
-								linecolor: "#506784",
-								ticks: "",
-							},
-						},
-						title: {
-							x: 0.05,
-						},
-						updatemenudefaults: {
-							bgcolor: "#506784",
-							borderwidth: 0,
-						},
-						xaxis: {
-							automargin: true,
-							gridcolor: "#283442",
-							linecolor: "#506784",
-							ticks: "",
-							title: {
-								standoff: 15,
-							},
-							zerolinecolor: "#283442",
-							zerolinewidth: 2,
-						},
-						yaxis: {
-							automargin: true,
-							gridcolor: "#283442",
-							linecolor: "#506784",
-							ticks: "",
-							title: {
-								standoff: 15,
-							},
-							zerolinecolor: "#283442",
-							zerolinewidth: 2,
-						},
-					},
-				};
-				const GradeExamCount = {
-					math: [],
-					science: [],
-					english: [],
-					social_studies: [],
-					additional: [],
-					world_language: [],
-				};
-				const CHECKMARK_SVG =
-					'<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="16" height="16" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>';
-				const NA_SVG =
-					'<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="16" height="16" class="bi bi-na" viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="2" rx="1"></rect></svg>';
-				const X_SVG =
-					'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>';
-				const DIVIDER_SVG =
-					'<svg preserveAspectRatio="none" width="4" height="4" class="div" fill="currentColor" viewBox="0 0 4 4"><circle></circle></svg>';
-				const WARNING_SVG =
-					'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>';
-				const LIGHT_GREEN = "#77ff7733";
-				const LIGHT_GREY = "#aaaaaa33";
+				if (window.COURSE_DATA_LOADED === undefined) {
+					throw new NotFound("COURSE_DATA_NOT_FOUND")
+				}
+				if (window.PLOTLY_DARK_LOADED === undefined) {
+					throw new NotFound("PLOTLY_DARK_NOT_FOUND")
+				}
+				if (window.CONVERSION_LOADED === undefined) {
+					throw new NotFound("CONVERSION_NOT_FOUND")
+				}
 				var takenCourses = [];
 				var filterGrades = [9,10,11,12]
-				function convertCreditToText(credit) {
-					let result = "Unknown";
-					switch (credit) {
-						case MATH_CREDIT:
-							result = "Math";
-							break;
-						case HEALTH_CREDIT:
-							result = "Health";
-							break;
-						case ENGLISH_CREDIT:
-							result = "English";
-							break;
-						case SCIENCE_CREDIT:
-							result = "Science";
-							break;
-						case SOCIAL_STUDY_CREDIT:
-							result = "Social Studies";
-							break;
-						case GENERAL_MUSIC_CREDIT:
-							result = "Music";
-							break;
-						case PHYSICAL_EDUCATION_CREDIT:
-							result = "P.E.";
-							break;
-						case MUSIC_SKILLS_DEVELOPMENT_CREDIT:
-							result = "Music (S Dev.)";
-							break;
-						case MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT:
-							result = "Music (K/A Dev.)";
-							break;
-						case MEETS_COMMENCEMENT_CREDIT:
-							result = "Commencement";
-							break;
-						default:
-							break;
-					}
-					return result;
-				}
-				function convertExamToText(exam) {
-					let result = "";
-					switch (exam) {
-						case LOCAL_EXAM:
-							result = "Local";
-							break;
-						case REGENTS_EXAM:
-							result = "Regents";
-							break;
-						case REGENTS_EXAM_JANUARY:
-							result = "January Regents";
-							break;
-						case AP_EXAM:
-							result = "AP";
-							break;
-						case AP_EXAM_ENCOURAGED:
-							result = "Encouraged AP";
-							break;
-						default:
-							break;
-					}
-					return result;
-				}
-				function convertPrerequisiteTypeToText(pretype) {
-					let result = "";
-					switch (pretype) {
-						case PREREQUISITE_REQUIRED:
-							result = "Required";
-							break;
-						case PREREQUISITE_OR:
-							result = "Or";
-							break;
-						case PREREQUISITE_RECOMMENDED:
-							result = "Recommended";
-							break;
-						default:
-							break;
-					}
-					return result;
-				}
-				function convertPrerequisiteTypeToColor(pretype) {
-					let result = "";
-					switch (pretype) {
-						case PREREQUISITE_REQUIRED:
-							result = "red";
-							break;
-						case PREREQUISITE_OR:
-							result = "blue";
-							break;
-						case PREREQUISITE_RECOMMENDED:
-							result = "yellow";
-							break;
-						case PREREQUISITE_NONE:
-							result = LIGHT_GREY;
-							break;
-						default:
-							break;
-					}
-					return result;
-				}
-				function convertPrerequisiteTypeToColorDark(pretype) {
-					if (!isDarkMode) {
-						return convertPrerequisiteTypeToColorLight(pretype);
-					}
-					let result = "";
-					switch (pretype) {
-						case PREREQUISITE_REQUIRED:
-							result = "#aa4444";
-							break;
-						case PREREQUISITE_OR:
-							result = "#4444aa";
-							break;
-						case PREREQUISITE_RECOMMENDED:
-							result = "#aaaa44";
-							break;
-						case PREREQUISITE_NONE:
-							result = LIGHT_GREY;
-							break;
-						default:
-							break;
-					}
-					return result;
-				}
-				function convertPrerequisiteTypeToColorLight(pretype) {
-					if (isDarkMode) {
-						return convertPrerequisiteTypeToColorDark(pretype);
-					}
-					let result = "";
-					switch (pretype) {
-						case PREREQUISITE_REQUIRED:
-							result = "#ffaaaa";
-							break;
-						case PREREQUISITE_OR:
-							result = "#aaaaff";
-							break;
-						case PREREQUISITE_RECOMMENDED:
-							result = "#ffffaa";
-							break;
-						case PREREQUISITE_NONE:
-							result = LIGHT_GREY;
-							break;
-						default:
-							break;
-					}
-					return result;
-				}
+				/**
+				 * Search Courses for a course
+				 * 
+				 * Either name, cid, or both can be passed to find a course
+				 * @param {string} name - The name of the course to search for
+				 * @param {string} cid - The courseID of the course to search for
+				 * @returns {course} - A course object (from courseData)
+				 */
 				function searchCourses(name = "", cid = "") {
-					let objs = [];
-					for (let i = 0; i < Courses.length; i++) {
+					let foundCourses = [];
+					for (let i = 0; i < Courses.length; i++) { // Iterate through courses
 						if (
 							(Courses[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
 							(Courses[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "")
-						) {
-							objs.push(Courses[i]);
+						) { // Test if the name or cid matches
+							foundCourses.push(Courses[i]); // Add course to found courses
 						}
 					}
-					return objs;
+					return foundCourses;
 				}
-				var ttp = [];
-				function preSearch(inname, prerequisites, prerequisite_types, ueph = false, r = 0) {
-					let adding = [];
-					if (prerequisites.length === 0 && ueph) {
-						return [["No Prerequisite", inname, PREREQUISITE_NONE]];
+				var scannedCourses = [];
+				/**
+				 * Search Prerequisites for a course and output them as a graph relation list
+				 * 
+				 * Graph Relation list - [PrerequisiteName, StartingCourseName, PrerequisiteType]
+				 * @param {string} inname - The name of the course
+				 * @param {[String]} prerequisites - A list of prerequisites to search through
+				 * @param {[PREREQUISITE]} prerequisite_types - A list of prerequisites types that match prerequisites argument
+				 * @param {boolean} displayNoPrerequisite - Should the 'No Prerequisite' be returned
+				 * @param {number} recursion - The depth of recursion that the function is at, prevents infinite loops
+				 * @returns {[[string, string, number]]} - Graph Relation list - [PrerequisiteName, StartingCourseName, PrerequisiteType], used for generation of graphs
+				 */
+				function preSearch(inname, prerequisites, prerequisite_types, displayNoPrerequisite = false, recursion = 0) {
+					let coursePrerequisites = [];
+					if (prerequisites.length === 0 && displayNoPrerequisite) { // If there are no prerequisites and displayNoPrerequisite = true
+						return [["No Prerequisite", inname, PREREQUISITE_NONE]]; // Return relation to no prerequisites
 					}
 					for (let i = 0; i < prerequisites.length; i++) {
-						let adds = [prerequisites[i], inname, prerequisite_types[i]];
+						let prerequisite = [prerequisites[i], inname, prerequisite_types[i]]; // The value we will add if it's not already scanned
 						if (
-							ttp.findIndex((e) => {
-								return e[0] === adds[0] && e[1] === adds[1] && e[2] === adds[2];
+							scannedCourses.findIndex((e) => {
+								return e[0] === prerequisite[0] && e[1] === prerequisite[1] && e[2] === prerequisite[2];
 							}) === -1
-						) {
-							adding.push(adds);
-							ttp.push(adds);
-							let results = searchCourses(prerequisites[i]);
-							if (results.length >= 1 && r <= 10) {
-								if (results[0].prerequisites.length > 0) {
-									for (var preI = 0; preI < results.length; preI++) {
-										if (results[preI].prerequisites.length > 0) {
+						) { // Test if the prerequisite matches a already scanned prerequisite
+							coursePrerequisites.push(prerequisite); // Add to course prerequisites
+							let results = searchCourses(prerequisites[i]); // Search for the prerequisite course
+							if (results.length >= 1 && recursion <= 10) { // If it exists and we have not hit max recursion
+								if (results[0].prerequisites.length > 0) { // If it has prerequisites
+									for (var prerequisiteIndex = 0; prerequisiteIndex < results.length; prerequisiteIndex++) { // Go through each prerequisite
+										if (results[prerequisiteIndex].prerequisites.length > 0) { // If it has prerequisites
 											let out = preSearch(
 												prerequisites[i],
-												results[preI].prerequisites,
-												results[preI].prerequisite_types,
-												ueph,
-												r + 1
-											);
-											adding = adding.concat(out);
+												results[prerequisiteIndex].prerequisites,
+												results[prerequisiteIndex].prerequisite_types,
+												displayNoPrerequisite,
+												recursion + 1
+												); // Search through it's prerequisites
+											coursePrerequisites = coursePrerequisites.concat(out); // Add them to coursePrerequisites
 										}
 									}
 								}
 							}
+							scannedCourses.push(prerequisite); // Add to scanned prerequisites
 						}
 					}
-					return adding;
+					return coursePrerequisites;
 				}
+				/**
+				 * Generate the Prerequisite graph for a course
+				 * 
+				 * @param {course} course - The course to generate the graph for
+				 * @returns {void}
+				 */
 				function GeneratePrerequisiteGraph(course) {
 					var layout = {
 						font: {
@@ -1709,12 +156,12 @@
 							r: 0,
 							b: 0,
 						},
-						template: isDarkMode ? template : {},
-					};
-					var appendData = [];
+						template: isDarkMode ? plotly_dark : {},
+					}; // The layout and theme for the graph
+					var data = [];
 					try {
-						ttp = [];
-						appendData = preSearch(course.name, course.prerequisites, course.prerequisite_types);
+						scannedCourses = [];
+						data = preSearch(course.name, course.prerequisites, course.prerequisite_types);
 					} catch (e2) {
 						presentError(e2, e2, " - Data Parsing");
 					}
@@ -1724,67 +171,67 @@
 					var source = [];
 					var target = [];
 					var value = [];
-					for (var i = 0; i < appendData.length; i++) {
+					for (var i = 0; i < data.length; i++) { // Go through the prerequisite data
 						var inID = label.findIndex((e) => {
-							return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
-						});
+							return e === data[i][0] || e === data[i][0] + " &#10003;";
+						}); // The index of the label (part) if it was already generated
 						let greyify = false;
-						if (inID === -1) {
+						if (inID === -1) { // If the label (part) was not generated, generate it
 							let taken =
 								takenCourses.findIndex((e) => {
-									return e.name === appendData[i][0];
-								}) === -1;
-							label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
+									return e.name === data[i][0];
+								}) === -1; // Was the course taken before?
+							label.push(taken ? data[i][0] : data[i][0] + " &#10003;"); // If taken label it with a checkmark and add it to labels
 							let or_check = coursePrerequisitesMet(
 								Courses[
 									Courses.findIndex((e) => {
-										return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
+										return e.name === data[i][1] || e.name === data[i][1] + " &#10003;";
 									})
-								],
+								], // The root course that this prerequisite is required for
 								true
-							);
-							if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
-								color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
+							); // Is there a OR part in the prerequisites for the root course?
+							if (or_check[0] && data[i][2] === PREREQUISITE_OR && or_check[1]) { // If there is a OR prerequisite and the current prerequisite is part of it
+								color.push(taken ? LIGHT_GREY : LIGHT_GREEN); // Make the label green if it's taken and grey if it's not
 								if (taken) {
-									greyify = true;
+									greyify = true; // Make the link grey
 								}
 							} else {
-								color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+								color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the prerequisite is not part of a OR set it's color accordingly
 							}
-							inID = label.length - 1;
+							inID = label.length - 1; // The label is now generated and is at the end of the label array
 						}
 						var outID = label.findIndex((e) => {
-							return e === appendData[i][1] || e === appendData[i][1] + " &#10003;";
-						});
-						if (outID === -1) {
+							return e === data[i][1] || e === data[i][1] + " &#10003;";
+						}); // The index of the label (part) if it was already generated
+						if (outID === -1) { // If the label (part) was not generated, generate it
 							let taken =
 								takenCourses.findIndex((e) => {
-									return e.name === appendData[i][1];
-								}) === -1;
-							label.push(taken ? appendData[i][1] : appendData[i][1] + " &#10003;");
-							color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
-							outID = label.length - 1;
+									return e.name === data[i][1];
+								}) === -1; // Was the course taken before?
+							label.push(taken ? data[i][1] : data[i][1] + " &#10003;"); // If taken label it with a checkmark and add it to labels
+							color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the course is complete color the label gray, if not color it the way it should be
+							outID = label.length - 1; // The label is now generated and is at the end of the label array
 						}
-						source.push(inID);
-						target.push(outID);
-						let lnc = "";
+						source.push(inID); // Create a link from the root course
+						target.push(outID); // To the prerequisite
+						let lnc = ""; // Link color
 						if (
 							takenCourses.findIndex((e) => {
-								return e.name === appendData[i][0];
+								return e.name === data[i][0];
 							}) === -1
-						) {
+						) { // If not taken
 							if (greyify) {
-								lnc = LIGHT_GREY;
+								lnc = LIGHT_GREY; // If prerequisite is handled by another color it grey, (only for OR)
 							} else {
-								lnc = convertPrerequisiteTypeToColorLight(appendData[i][2]);
+								lnc = convertPrerequisiteTypeToColorLight(data[i][2]); // Color it accordingly
 							}
 						} else {
-							lnc = LIGHT_GREEN;
+							lnc = LIGHT_GREEN; // We have met the prerequisite, color the link green
 						}
-						linkcolor.push(lnc);
-						value.push(1);
+						linkcolor.push(lnc); // Add the link color to the link
+						value.push(1); // Make sure all links are at the same scale
 					}
-					var data = {
+					var dataObj = {
 						type: "sankey",
 						orientation: "h",
 						node: {
@@ -1806,58 +253,64 @@
 						},
 						//arrangement: 'snap',
 						hoverinfo: false,
-					};
-					var data = [data];
-					Plotly.react("preflow", data, layout, {
+					}; // The data that we are adding in a format that Plotly can understand
+					var dataObj = [dataObj]; // Put it in a array so Plotly can use it
+					Plotly.react("preflow", dataObj, layout, {
 						scrollZoom: true,
 						responsive: true,
 						modebar_add: ["zoom", "pan"],
-					});
+					}); // Generate the graph in div#preflow (found in: index.html > html > body > div#infobox > div > div#preflow)
 				}
+				/**
+				 * Checks if the prerequisites are met for a course
+				 * 
+				 * @param {course} inname - The name of the course
+				 * @param {boolean} just_or - Should only prerequisites that are marked with OR should be checked
+				 * @returns {boolean | [boolean, boolean]} - If just_or is true return if there was an OR and if it is satisfied, If just_or is false return if all prerequisites are met
+				 */
 				function coursePrerequisitesMet(course, just_or = false) {
 					if (course === undefined) {
 						ERep.Log("It appears that a undefined course was passed to check Pre-Req's");
-						return 0;
+						return false;
 					}
 					let presOrComplete = false;
 					let containedOr = false;
-					for (var i = 0; i < course.prerequisites.length; i++) {
+					for (var i = 0; i < course.prerequisites.length; i++) { // Search through prerequisites
 						if (course.prerequisite_types[i] === PREREQUISITE_OR) {
-							containedOr = true;
+							containedOr = true; // There is a OR in the prerequisites
 						}
 						if (
 							course.prerequisite_types[i] === PREREQUISITE_OR &&
 							takenCourses.findIndex((e) => {
 								return e.name === course.prerequisites[i];
 							}) != -1
-						) {
+						) { // Is one of the OR prerequisites complete? If complete break
 							presOrComplete = true;
 							break;
 						}
 					}
 					if (just_or) {
-						return [containedOr, presOrComplete];
+						return [containedOr, presOrComplete]; // See @returns
 					}
 					if (!presOrComplete && containedOr) {
-						return false;
+						return false; // If the OR prerequisites are not satisfied prerequisites are not complete
 					}
-					let pres_complete = true;
-					for (var i = 0; i < course.prerequisites.length; i++) {
+					for (var i = 0; i < course.prerequisites.length; i++) { // Go through all prerequisites
 						if (
 							takenCourses.findIndex((e) => {
 								return e.name === course.prerequisites[i];
 							}) === -1
-						) {
-							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) {
+						) { // If the course was not taken
+							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If OR we have another one that is satisfied
 								continue;
-							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) {
+							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
 								continue;
-							} else {
+							} else { // If it's not complete and it's required, the prerequisites are not complete
 								return false;
 							}
 						}
 					}
-					return true;
+					return true; // All the prerequisites are complete
 				}
 				function showCourse(course) {
 					document.getElementById("infobox").style.display = "flex";
@@ -1922,8 +375,53 @@
 						GeneratePrerequisiteGraph(course);
 					});
 				}
-				function addTakenCourse(e) {
-					let cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])];
+				function checkIfEsr(course) {
+					switch (course.cid) {
+						case "0406":
+							return [true, MATH_CREDIT]
+						case "0411":
+							return [true, MATH_CREDIT]
+						case "0442":
+							return [true, MATH_CREDIT]
+						case "0440":
+							return [true, MATH_CREDIT]
+						case "0443":
+							return [true, MATH_CREDIT]
+						default:
+							return [false, 0]
+					}
+				}
+				function pushRes(cc, score, type) {
+					let addingData = [cc.cid, score]
+					switch (type) {
+						case MATH_CREDIT:
+							GradeExamCount.math.push(addingData)
+							return
+					}
+				}
+				async function promptForRes(cc) {
+					let checkResult = checkIfEsr(cc)
+					if (!checkResult[0]) {
+						return;
+					}
+					return new Promise((resolve) => {
+						document.getElementById("res").style.display = "block";
+						let elem = document.getElementById("rescalc");
+						elem.addEventListener("click", () => {
+							let input = document.getElementById("resinp")
+							let matched = input.value.match(/\d+/g)
+							let out = ""
+							for (let i = 0; i < matched.length; i++) {
+								out += parseInt(matched[i])
+							}
+							pushRes(cc, out, checkResult[1])
+							document.getElementById("res").style.display = "none";
+							resolve("")
+						}, { once: true })
+					})
+				}
+				async function addTakenCourse(e) {
+					var cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])];
 					if (e.target.id === "ell") {
 						showCourse(cc);
 						return;
@@ -1933,9 +431,12 @@
 							return e === cc;
 						}) === -1
 					) {
+						var ev = e.currentTarget;
+						await promptForRes(cc);
 						takenCourses.push(cc);
-						e.currentTarget.lastChild.innerHTML =
-							CHECKMARK_SVG + e.currentTarget.lastChild.innerHTML;
+						ev.lastChild.innerHTML = CHECKMARK_SVG + ev.lastChild.innerHTML;
+						PropagateTakenCourses();
+						PropagateCourseChart();
 					} else {
 						takenCourses.splice(
 							takenCourses.findIndex((e) => {
@@ -1944,9 +445,9 @@
 							1
 						);
 						e.currentTarget.lastChild.firstChild.remove();
+						PropagateTakenCourses();
+						PropagateCourseChart();
 					}
-					PropagateTakenCourses();
-					PropagateCourseChart();
 				}
 				function PropagateTakenCourseSearchResults() {
 					document.getElementById("addcompletesugglist").innerHTML = "";
@@ -2230,11 +731,11 @@
 							r: 10,
 							b: 10,
 						},
-						template: isDarkMode ? template : {},
+						template: isDarkMode ? plotly_dark : {},
 					};
 					var appendData = [];
 					try {
-						ttp = [];
+						scannedCourses = [];
 						for (let i = 0; i < Courses.length; i++) {
 							appendData.push(
 								...preSearch(
@@ -2347,654 +848,37 @@
                     document.documentElement.setAttribute("data-theme", "dark");
                     isDarkMode = true;
                 }
-                /*
-				google.charts.load("current", { packages: ["sankey"] });
-				google.charts.setOnLoadCallback(drawChart);
-				function drawChart() {
-					var data = new google.visualization.DataTable();
-					data.addColumn("string", "From");
-					data.addColumn("string", "To");
-					data.addColumn("number", "Requirement Type");
-					var appendData = [];
-                    try {
-                        for (var i = 0; i < Courses.length; i++) {
-                            if (Courses[i].name === undefined) {
-                                throw "Name Invalid - Course names must be provided, if not named leave as <span>name: \"\"</span><br>Course ID: "+Courses[i].cid+"<br>Course # (Index): "+(i+1)
-                            }
-                            if (Courses[i].cid === undefined || Courses[i].cid === "") {
-                                throw "Course ID Invalid - Course ids must be provided, if it doesn't have one leave as <span>cid: \"NONE\"</span><br>Course Name: "+Courses[i].name+"<br>Course # (Index): "+(i+1)
-                            }
-                            if (Courses[i].grade === undefined || Courses[i].grade.length === 0) {
-                                throw "Grades Invalid - Grade levels must be declared, if it doesn't have specific ones leave as <span>grades: [9,10,11,12]</span><br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid
-                            }
-                            if (Courses[i].exams === undefined || Courses[i].cid === "") {
-                                throw "Exams Invalid - Exams must be declared, if it doesn't have any leave as <span>exams: []</span><br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid
-                            }
-                            if (Courses[i].prerequisites.length == 0) {
-								let llis = ""
-								for (var i2 = 0; i2 < Courses[i].grade.length; i2++) {
-									llis += String(Courses[i].grade[i2]+"th"+(i2 === (Courses[i].grade.length - 1)  ? " " : " & "))
-								}
-								llis += Courses[i].grade.length >= 2 ? "Grades " : "Grade "
-                                let tAppend = [llis, Courses[i].name, PREREQUISITE_AND];
-                                appendData.push(tAppend);
-                                continue;
-                            }
-                            for (var pri = 0; pri < Courses[i].prerequisites.length; pri++) {
-                                if (Courses[i].prerequisite_types[pri] === NaN || Courses[i].prerequisite_types[pri] > 3 || Courses[i].prerequisite_types[pri] < 1) {
-                                    throw "Prerequisite Data Invalid<br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid+"<br>Prerequisite #: "+(pri+1)
-                                } else if (Courses[i].prerequisite_types[pri] === undefined) {
-                                    throw "Prerequisite Data Invalid - You must define a type for each prerequisite<br>Course Name: "+Courses[i].name+"<br>Course ID: "+Courses[i].cid+"<br>Prerequisite: #"+(pri+1)
-                                }
-                                let tAppend = [Courses[i].prerequisites[pri], Courses[i].name, Courses[i].prerequisite_types[pri]];
-                                appendData.push(tAppend);
-                            }
-                        }
-                    } catch (e2) {
-                        presentError(e2,e2,' - Data Parsing')
-                    }
-					data.addRows(appendData);
-
-					// Sets chart options.
-					var options = {
-						sankey: { 
-							node: { 
-								nodePadding: 10
-							},
-							iterations: 100
-					    },
-						explorer: {
-							axis: 'horizontal',
-							keepInBounds: true,
-							maxZoomIn: 4.0
-						}
-
-					};
-
-					// Instantiates and draws our chart, passing in some options.
-					var chart = new google.visualization.Sankey(document.getElementById("sankey_basic"));
-					chart.draw(data, options);
-				}
-				*/
-				// Generate Build ID
+                // Generate Build ID
 				//(()=>{let d=new Date();let bi=d.getMonth()+""+d.getDate()+""+d.getFullYear()+""+d.getHours()+""+d.getMinutes()+""+d.getSeconds();presentError(bi,""," - BuildID");})()
 			} catch (e) {
-				presentError(
-					"Unknown Error - Contact Creator! <br><br><pre>Name: " +
-						e.name +
-						"<br>Message: " +
-						e.message +
-						"<br>Stack: " +
-						e.stack +
-						"</pre>",
-					e
-				);
+				if (e instanceof NotFound) {
+					presentError(
+						e.message,
+						e,
+						" - CodeNotFound"
+					);
+				} else {
+					presentError(
+						"Unknown Error - Contact Creator! <br><br><pre>Name: " +
+							e.name +
+							"<br>Message: " +
+							e.message +
+							"<br>Stack: " +
+							e.stack +
+							"</pre>",
+						e
+					);
+				}
 			}
 		</script>
-		<style>
-			:root {
-                color-scheme: light;
-				--mainBackground: #ffffff;
-				--bgSolidColor: #e4e4e4;
-				--mainTextColor: #000000;
-				--textColorLabel: #444444;
-				--transparentBase: #ffffff3d;
-				--transparentLike: #70707011;
-				--border: #cccccc;
-				--border1: #adadad;
-				--shadow1: #cccccc;
-				--shadow2: #6b6b6b;
-				--shadow3: #bbbbbb;
-			}
-			[data-theme="dark"] {
-                color-scheme: dark;
-				--mainBackground: #232329;
-				--mainTextColor: #ffffff;
-				--bgSolidColor: #414146;
-				--textColorLabel: #cccccc;
-				--transparentBase: #2323293d;
-				--transparentLike: #ffffff11;
-				--border: #444444;
-				--border1: #313131;
-				--shadow1: #444444;
-				--shadow2: #2e2e2e;
-				--shadow3: #272727;
-			}
-			body {
-				margin: 0px 20px;
-				overflow-x: hidden;
-				overflow-y: auto;
-				font-family: Verdana, Geneva, Tahoma, sans-serif;
-				padding-bottom: 50px;
-				background-color: var(--mainBackground);
-				color: var(--mainTextColor);
-			}
-			/*
-			#sankey_basic {
-				padding: 15px;
-				height: 200%;
-				width: 200%;
-				overflow: hidden;
-				position: absolute;
-				top: 50%;
-				left: 50%;
-				translate: -50% -50%;
-				transform: scale(0.5);
-			}
-			#scrollarea {
-				position: relative;
-				top: 5px;
-				left: 15px;
-				height: calc(100vh - 30px);
-				width: calc(100vw - 45px);
-				overflow: hidden;
-				border: #cccccc solid 1px;
-				border-radius: 10px;
-				box-shadow: #444444 0px 0px 20px 0px;
-				-ms-overflow-style: none;
-				scrollbar-width: none;
-			}
-			#scrollarea::-webkit-scrollbar {
-				display: none;
-			}
-			*/
-			#errorbox {
-				position: absolute;
-				top: calc(50% - 50px);
-				left: calc(50% - 50px);
-				transform: translate(-50%, -50%);
-				padding: 20px 50px;
-				margin: 50px 50px;
-				border: var(--border) solid 1px;
-				border-radius: 10px;
-				box-shadow: #de6c6c 0px 0px 20px 0px;
-				display: grid;
-				grid-template-columns: "a";
-				align-items: center;
-				align-content: center;
-				text-align: center;
-				justify-content: center;
-				justify-items: center;
-				z-index: 100000;
-				background: #ffffff11;
-				backdrop-filter: blur(20px);
-				-webkit-backdrop-filter: blur(20px);
-			}
-			#errorbox > h4 {
-				margin: 5px;
-			}
-			#errorbox > svg {
-				width: 64px !important;
-				height: 64px !important;
-				padding: 1px;
-				overflow: visible;
-			}
-			pre {
-				background-color: #0f0f0f;
-				border: var(--border) solid 2px;
-				border-radius: 10px;
-				text-align: left;
-				color: #ffffff;
-				padding: 10px 15px;
-				font-family: monospace;
-				box-shadow: #000000 0px 0px 20px 5px;
-			}
-			#errorbox > p > span {
-				background-color: #191919;
-				border: var(--border) solid 2px;
-				border-radius: 10px;
-				text-align: center;
-				color: #ffffff;
-				padding: 5px;
-				font-family: monospace;
-			}
-			#addcompletebox,
-			#infobox,
-			#res {
-				position: absolute;
-				top: calc(50% - 50px);
-				left: calc(50% - 50px);
-				transform: translate(-50%, -50%);
-				padding: 20px 50px;
-				margin: 50px 50px;
-				border: var(--border) solid 1px;
-				border-radius: 10px;
-				box-shadow: var(--shadow2) 0px 0px 20px 0px;
-				z-index: 10000;
-				background: var(--transparentBase);
-				backdrop-filter: blur(20px);
-				-webkit-backdrop-filter: blur(20px);
-				display: flex;
-				gap: 20px;
-			}
-			button {
-				border: #0084ff solid 1px;
-				border-radius: 10px;
-				background-color: var(--mainBackground);
-				padding: 10px 15px;
-				box-shadow: var(--shadow3) 0px 0px 10px 0px;
-				transition: box-shadow 0.5s;
-				color: var(--mainTextColor);
-			}
-			button:hover {
-				box-shadow: #8d8d8d 0px 0px 10px 0px;
-			}
-			button:disabled {
-				color: var(--mainTextColor);
-				opacity: 0.6;
-			}
-			input,
-			label {
-				display: block;
-			}
-			label {
-				font-size: 12.5px;
-				color: var(--textColorLabel);
-			}
-			input {
-				border: var(--border1) solid 1px;
-				border-radius: 10px;
-				background-color: var(--mainBackground);
-				padding: 10px;
-				margin-bottom: 10px;
-				margin-top: 5px;
-				box-shadow: var(--shadow1) 0px 0px 10px 0px;
-				transition: border 0.2s;
-				color: var(--mainTextColor);
-			}
-			input:focus {
-				outline: none;
-				border: #0084ff solid 1px;
-			}
-			#addcompletesugg {
-				border: var(--border1) solid 1px;
-				border-radius: 10px;
-				background-color: var(--transparentBase);
-				backdrop-filter: blur(5px);
-				-webkit-backdrop-filter: blur(5px);
-				padding: 10px;
-				margin-bottom: 10px;
-				margin-top: 5px;
-				box-shadow: var(--shadow1) 0px 0px 10px 0px;
-				width: 300px;
-			}
-			#addcompletesugg > div {
-				width: 205px;
-			}
-			#addcompletesugg > h4 {
-				margin: 0px;
-				margin-left: -10px;
-				padding: 0px 0px 10px 10px;
-				font-weight: normal;
-				width: calc(100% + 10px);
-				border-bottom: var(--border1) solid 1px;
-			}
-			#addcompletesugglist,
-			ul {
-				overflow-y: auto;
-				overflow-x: visible;
-				min-height: 200px;
-				max-height: 40vh;
-				list-style-type: none;
-				padding: 0;
-				margin: 0;
-				padding-top: 10px;
-			}
-			ul > li {
-				border: var(--border) solid 1px;
-				border-radius: 5px;
-				margin-bottom: 10px;
-				padding: 5px;
-				cursor: pointer;
-				background-color: var(--transparentBase);
-				backdrop-filter: blur(5px);
-				-webkit-backdrop-filter: blur(5px);
-				transition: all 0.1s;
-			}
-			ul > li:hover {
-				border-color: #0084ff;
-				background-color: #0084ff0a;
-			}
-			ul > li > h5,
-			ul > li > div > h5 {
-				margin: 0px;
-				font-size: 15px;
-				color: var(--mainTextColor);
-				display: flex;
-				flex-wrap: wrap;
-			}
-			ul > li > h5 > span,
-			ul > li > div > h5 > span {
-				margin-left: 5px;
-				display: flex;
-				align-items: center;
-				align-content: center;
-				gap: 5px;
-				color: #ff0000;
-			}
-			ul > li.tcf,
-			ul > li > div.tcf,
-			ul > li > div > div.tcf {
-				display: flex;
-				gap: 5px;
-				color: var(--textColorLabel);
-				font-size: 12.5px;
-				overflow-x: scroll;
-				align-items: center;
-				align-content: center;
-				white-space: nowrap;
-				-ms-overflow-style: none;
-				scrollbar-width: none;
-			}
-			ul > li.tcf::-webkit-scrollbar,
-			ul > li > div.tcf::-webkit-scrollbar,
-			ul > li > div > div.tcf::-webkit-scrollbar {
-				display: none;
-			}
-			ul > li.tcf {
-				justify-content: space-between;
-			}
-			svg.bi-check,
-			svg.bi-na,
-			svg.bi-x,
-			svg.bi-exclamation-triangle-fill {
-				fill: #ffffff;
-				background-color: #00d000;
-				border-radius: 50%;
-				width: 14px !important;
-				height: 14px !important;
-				padding: 1px;
-				overflow: visible;
-			}
-			svg.bi-na {
-				background-color: #aaaaaa;
-			}
-			svg.bi-x {
-				background-color: #ff4444;
-			}
-			svg.bi-exclamation-triangle-fill {
-				fill: #ff0000;
-				background-color: #00000000;
-				border-radius: 0px;
-			}
-			svg.bi-trash {
-				fill: #ff0000;
-				padding: 5px;
-				border-radius: 5px;
-				transition: all 0.2s;
-			}
-			svg.bi-trash:hover {
-				fill: #ff0000;
-				background-color: #ff000022;
-			}
-			ul > li > div > svg.div {
-				fill: #ffffff;
-				background-color: rgb(136, 136, 136);
-				border-radius: 50%;
-				width: 4px !important;
-				height: 4px !important;
-				padding: 0px;
-				overflow: visible;
-			}
-			#addcompletesugglist > p,
-			#takenCourses > p {
-				margin: 10px 0px;
-				text-align: center;
-				color: var(--textColorLabel);
-				font-style: oblique;
-			}
-			#addcompleteclose,
-			#infoclose {
-				position: absolute;
-				bottom: 30px;
-				width: 205px;
-			}
-			#addcomplete {
-				padding: 5px;
-				background-color: #0084ff;
-				width: 30px;
-				height: 30px;
-				color: #ffffff;
-				border: none;
-				border-radius: 50%;
-				display: flex;
-				align-items: center;
-				align-content: center;
-				justify-content: center;
-			}
-			.header {
-				display: flex;
-				gap: 20px;
-				align-items: center;
-				align-content: center;
-				justify-content: left;
-			}
-			#takenCourses > p {
-				text-align: left;
-				font-size: 12.5px;
-			}
-			#infobox {
-				padding-bottom: 100px;
-			}
-			#infoboxdata {
-				width: 250px;
-				font-size: 15px;
-			}
-			#preflow {
-				min-width: 350px;
-				max-width: 100%;
-				min-height: 250px;
-				max-height: 100%;
-				background-color: #cccccc;
-			}
-			#prelegend {
-				display: flex;
-				flex-wrap: wrap;
-				align-items: center;
-				align-content: center;
-				gap: 5px;
-				margin-top: 5px;
-				font-size: 12.5px;
-			}
-			#prelegend > .color {
-				fill: var(--c);
-				background-color: var(--c);
-				width: 7px !important;
-				height: 7px !important;
-				margin: 3.5px;
-				overflow: visible;
-			}
-			#pres {
-				font-size: 15px;
-				margin-bottom: 5px;
-				display: flex;
-				flex-wrap: wrap;
-				align-content: center;
-				align-items: center;
-			}
-			#pres > svg {
-				margin-left: 5px;
-			}
-			#infobox > div > h4 {
-				margin: 0px;
-				margin-top: 15px;
-			}
-
-			.diplomaarea {
-				display: flex;
-			}
-			.diploma {
-				border: var(--border) solid 1px;
-				border-radius: 10px;
-				background: var(--transparentLike);
-				backdrop-filter: blur(20px);
-				-webkit-backdrop-filter: blur(20px);
-				padding: 20px;
-			}
-			.diploma > div {
-				display: flex;
-				align-items: center;
-				align-content: center;
-			}
-			.diploma > div > div:nth-child(1) {
-				display: flex;
-				align-items: center;
-				align-content: center;
-				min-width: 22.5px;
-			}
-			.diploma > div > label {
-				font-size: 15px;
-				color: var(--mainTextColor);
-			}
-			.failed {
-				color: #ff0000;
-			}
-			.accepted {
-				color: #00be00;
-			}
-			#res {
-				display: block;
-			}
-			#res > h2 {
-				margin-bottom: 5px;
-			}
-			#res > input {
-				width: 100%;
-			}
-			footer {
-				position: fixed;
-				bottom: 10px;
-				right: 10px;
-				text-align: right;
-				font-size: 10px;
-				color: #707070;
-			}
-			footer > a {
-				text-decoration: none;
-				color: #00779b;
-			}
-			#allc {
-				height: 400px;
-				width: 100%;
-			}
-            #darkLightToggleContainer {
-                display: flex;
-                align-items: center;
-                align-content: center;
-                gap: 10px;
-                margin: 20px 0px;
-            }
-			.switch {
-				position: relative;
-				display: inline-block;
-				width: 60px;
-				height: 34px;
-			}
-			.switch input {
-				opacity: 0;
-				width: 0;
-				height: 0;
-			}
-			.slider {
-				position: absolute;
-				cursor: pointer;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				background-color: #ccc;
-				-webkit-transition: 0.4s;
-				transition: 0.4s;
-                border-radius: 34px;
-			}
-			.slider:before {
-				position: absolute;
-				content: "";
-				height: 26px;
-				width: 26px;
-				left: 4px;
-				bottom: 4px;
-				background-color: white;
-				-webkit-transition: 0.4s;
-				transition: 0.4s;
-                border-radius: 50%;
-			}
-			input:checked + .slider {
-				background-color: #2196f3;
-			}
-			input:focus + .slider {
-				box-shadow: 0 0 1px #2196f3;
-			}
-			input:checked + .slider:before {
-				-webkit-transform: translateX(26px);
-				-ms-transform: translateX(26px);
-				transform: translateX(26px);
-			}
-			#filters {
-				display: flex;
-				gap: 20px;
-				height: 3rem;
-				margin-bottom: 1rem;
-			}
-			#filters > .divider {
-				background-color: var(--bgSolidColor);
-				width: 1px;
-				height: 2.5rem;
-				margin-top: 0.25rem;
-			}
-			select {
-				appearance: none;
-				-webkit-appearance: none;
-				padding: 1rem;
-				border: none;
-				color: var(--mainTextColor);
-				cursor: pointer;
-				width: 100px;
-				background-color: var(--mainBackground);
-			}
-			.selectContainer {
-				position: relative;
-			}
-			.selectContainer::after {
-				--size: .3rem;
-				content: "";
-				position: absolute;
-				right: 0px;
-				pointer-events: none;
-				border-left: var(--size) solid transparent;
-				border-right: var(--size) solid transparent;
-				border-top: var(--size) solid var(--textColorLabel);
-				top: calc(1.5rem - var(--size) / 2);
-			}
-			#gradeLevelFiltering {
-				display: flex;
-				padding: 5px 10px;
-				gap: 5px;
-			}
-			#gradeLevelFiltering > label {
-				display: flex;
-				align-items: center;
-				align-content: center;
-				justify-content: center;
-			}
-			#gradeLevelFiltering > label > input {
-				display: none;
-			}
-			#gradeLevelFiltering > label > span.glfs {
-				padding: 5px;
-				border-radius: 5px;
-			}
-			input:checked + .glfs {
-				background-color: var(--bgSolidColor);
-			}
-		</style>
+		<link rel="stylesheet" href="./style.css">
 	</head>
 	<body>
 		<div id="res" style="display: none">
 			<h2>Regents Exam Score</h2>
 			<label>Required to Calculate Diploma Progress</label>
-			<input type="text" />
-			<button disabled>Calculate</button>
+			<input type="text" placeholder="0%" id="resinp"/>
+			<button id="rescalc">Calculate</button>
 		</div>
 		<div id="addcompletebox" style="display: none">
 			<div>
@@ -3312,7 +1196,7 @@
 			</label>
 		</div>
 		<footer>
-			Version 0.1 Alpha (Build <span id="buildid">1111202311557</span>) -
+			Version 0.1 Alpha (Build <span id="buildid">172024185201</span>) -
 			<a href="https://github.com/SGOTI2/course">Github</a> -
 			<a href="https://github.com/SGOTI2/course/issues">Issues</a>
 		</footer>
