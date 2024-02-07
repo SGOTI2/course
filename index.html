@@ -140,7 +140,7 @@
 					return coursePrerequisites;
 				}
 				/**
-				 * Generate the Prerequisite graph for a course and add it to the 
+				 * Generate the Prerequisite graph for a course
 				 * 
 				 * @param {course} course - The course to generate the graph for
 				 * @returns {void}
@@ -171,67 +171,67 @@
 					var source = [];
 					var target = [];
 					var value = [];
-					for (var i = 0; i < data.length; i++) {
+					for (var i = 0; i < data.length; i++) { // Go through the prerequisite data
 						var inID = label.findIndex((e) => {
 							return e === data[i][0] || e === data[i][0] + " &#10003;";
-						});
+						}); // The index of the label (part) if it was already generated
 						let greyify = false;
-						if (inID === -1) {
+						if (inID === -1) { // If the label (part) was not generated, generate it
 							let taken =
 								takenCourses.findIndex((e) => {
 									return e.name === data[i][0];
-								}) === -1;
-							label.push(taken ? data[i][0] : data[i][0] + " &#10003;");
+								}) === -1; // Was the course taken before?
+							label.push(taken ? data[i][0] : data[i][0] + " &#10003;"); // If taken label it with a checkmark and add it to labels
 							let or_check = coursePrerequisitesMet(
 								Courses[
 									Courses.findIndex((e) => {
 										return e.name === data[i][1] || e.name === data[i][1] + " &#10003;";
 									})
-								],
+								], // The root course that this prerequisite is required for
 								true
-							);
-							if (or_check[0] && data[i][2] === PREREQUISITE_OR && or_check[1]) {
-								color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
+							); // Is there a OR part in the prerequisites for the root course?
+							if (or_check[0] && data[i][2] === PREREQUISITE_OR && or_check[1]) { // If there is a OR prerequisite and the current prerequisite is part of it
+								color.push(taken ? LIGHT_GREY : LIGHT_GREEN); // Make the label green if it's taken and grey if it's not
 								if (taken) {
-									greyify = true;
+									greyify = true; // Make the link grey
 								}
 							} else {
-								color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN);
+								color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the prerequisite is not part of a OR set it's color accordingly
 							}
-							inID = label.length - 1;
+							inID = label.length - 1; // The label is now generated and is at the end of the label array
 						}
 						var outID = label.findIndex((e) => {
 							return e === data[i][1] || e === data[i][1] + " &#10003;";
-						});
-						if (outID === -1) {
+						}); // The index of the label (part) if it was already generated
+						if (outID === -1) { // If the label (part) was not generated, generate it
 							let taken =
 								takenCourses.findIndex((e) => {
 									return e.name === data[i][1];
-								}) === -1;
-							label.push(taken ? data[i][1] : data[i][1] + " &#10003;");
-							color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN);
-							outID = label.length - 1;
+								}) === -1; // Was the course taken before?
+							label.push(taken ? data[i][1] : data[i][1] + " &#10003;"); // If taken label it with a checkmark and add it to labels
+							color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the course is complete color the label gray, if not color it the way it should be
+							outID = label.length - 1; // The label is now generated and is at the end of the label array
 						}
-						source.push(inID);
-						target.push(outID);
-						let lnc = "";
+						source.push(inID); // Create a link from the root course
+						target.push(outID); // To the prerequisite
+						let lnc = ""; // Link color
 						if (
 							takenCourses.findIndex((e) => {
 								return e.name === data[i][0];
 							}) === -1
-						) {
+						) { // If not taken
 							if (greyify) {
-								lnc = LIGHT_GREY;
+								lnc = LIGHT_GREY; // If prerequisite is handled by another color it grey, (only for OR)
 							} else {
-								lnc = convertPrerequisiteTypeToColorLight(data[i][2]);
+								lnc = convertPrerequisiteTypeToColorLight(data[i][2]); // Color it accordingly
 							}
 						} else {
-							lnc = LIGHT_GREEN;
+							lnc = LIGHT_GREEN; // We have met the prerequisite, color the link green
 						}
-						linkcolor.push(lnc);
-						value.push(1);
+						linkcolor.push(lnc); // Add the link color to the link
+						value.push(1); // Make sure all links are at the same scale
 					}
-					var data = {
+					var dataObj = {
 						type: "sankey",
 						orientation: "h",
 						node: {
@@ -253,13 +253,13 @@
 						},
 						//arrangement: 'snap',
 						hoverinfo: false,
-					};
-					var data = [data];
-					Plotly.react("preflow", data, layout, {
+					}; // The data that we are adding in a format that Plotly can understand
+					var dataObj = [dataObj]; // Put it in a array so Plotly can use it
+					Plotly.react("preflow", dataObj, layout, {
 						scrollZoom: true,
 						responsive: true,
 						modebar_add: ["zoom", "pan"],
-					});
+					}); // Generate the graph in div#preflow (found in: index.html > html > body > div#infobox > div > div#preflow)
 				}
 				/**
 				 * Checks if the prerequisites are met for a course
@@ -301,7 +301,7 @@
 								return e.name === course.prerequisites[i];
 							}) === -1
 						) { // If the course was not taken
-							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If OR we have another one that is sastified
+							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If OR we have another one that is satisfied
 								continue;
 							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
 								continue;
