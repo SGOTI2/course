@@ -248,50 +248,56 @@
 						modebar_add: ["zoom", "pan"],
 					});
 				}
+				/**
+				 * Checks if the prerequisites are met for a course
+				 * 
+				 * @param {course} inname - The name of the course
+				 * @param {boolean} just_or - Should only prerequisites that are marked with OR should be checked
+				 * @returns {boolean | [boolean, boolean]} - If just_or is true return if there was an OR and if it is satisfied, If just_or is false return if all prerequisites are met
+				 */
 				function coursePrerequisitesMet(course, just_or = false) {
 					if (course === undefined) {
 						ERep.Log("It appears that a undefined course was passed to check Pre-Req's");
-						return 0;
+						return false;
 					}
 					let presOrComplete = false;
 					let containedOr = false;
-					for (var i = 0; i < course.prerequisites.length; i++) {
+					for (var i = 0; i < course.prerequisites.length; i++) { // Search through prerequisites
 						if (course.prerequisite_types[i] === PREREQUISITE_OR) {
-							containedOr = true;
+							containedOr = true; // There is a OR in the prerequisites
 						}
 						if (
 							course.prerequisite_types[i] === PREREQUISITE_OR &&
 							takenCourses.findIndex((e) => {
 								return e.name === course.prerequisites[i];
 							}) != -1
-						) {
+						) { // Is one of the OR prerequisites complete? If complete break
 							presOrComplete = true;
 							break;
 						}
 					}
 					if (just_or) {
-						return [containedOr, presOrComplete];
+						return [containedOr, presOrComplete]; // See @returns
 					}
 					if (!presOrComplete && containedOr) {
-						return false;
+						return false; // If the OR prerequisites are not satisfied prerequisites are not complete
 					}
-					let pres_complete = true;
-					for (var i = 0; i < course.prerequisites.length; i++) {
+					for (var i = 0; i < course.prerequisites.length; i++) { // Go through all prerequisites
 						if (
 							takenCourses.findIndex((e) => {
 								return e.name === course.prerequisites[i];
 							}) === -1
-						) {
-							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) {
+						) { // If the course was not taken
+							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If OR we have another one that is sastified
 								continue;
-							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) {
+							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
 								continue;
-							} else {
+							} else { // If it's not complete and it's required, the prerequisites are not complete
 								return false;
 							}
 						}
 					}
-					return true;
+					return true; // All the prerequisites are complete
 				}
 				function showCourse(course) {
 					document.getElementById("infobox").style.display = "flex";
