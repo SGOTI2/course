@@ -312,67 +312,57 @@
 					}
 					return true; // All the prerequisites are complete
 				}
+				/**
+				 * Display a course on the screen
+				 * 
+				 * @param {course} course - The course to display
+				 * @returns {void}
+				 */
 				function showCourse(course) {
-					document.getElementById("infobox").style.display = "flex";
-					document.querySelector("#infobox > #infoboxdata > h3").innerHTML = course.name;
-					let divs = document.querySelectorAll("#infobox > #infoboxdata > div");
-					divs[0].innerHTML = course.cid;
-					let creds = "";
-					for (var i = 0; i < course.credits.length; i++) {
-						let cctt = convertCreditToText(course.credits[i][0]);
-						if (cctt === "Commencement") {
-							creds += `${i === 0 ? "" : ", "}<span>1 ${cctt} Credit</span>`;
-						} else {
-							creds += `${i === 0 ? "" : ", "}<span>${course.credits[i][1]} ${cctt} Credit</span>`;
-						}
+					document.getElementById("infobox").style.display = "flex"; // The default display is none, set it so it's visible
+					document.querySelector("#infobox > #infoboxdata > h3").innerHTML = course.name; // Set the course name
+					let divs = document.querySelectorAll("#infobox > #infoboxdata > div"); // A list of div's in infoboxdata
+					divs[0].innerHTML = course.cid; // Set the course ID
+					let credits = ""; // HTML of credits to display
+					for (var i = 0; i < course.credits.length; i++) { // For all credits
+						let creditName = convertCreditToText(course.credits[i][0]); // Get credit name in text
+						credits += `${i === 0 ? "" : ", "}<span>${creditName === "Commencement" ? 1 : course.credits[i][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit set the number of credits to 1 (The default is 0)
 					}
-					let exams = "";
-					for (var i = 0; i < course.exams.length; i++) {
-						let ectt = convertExamToText(course.exams[i]);
-						exams += `${i === 0 ? "" : ", "}<span>${ectt} Exam</span>`;
+					divs[1].innerHTML = credits; // Display credits
+					let exams = ""; // HTML of exams to display
+					for (var i = 0; i < course.exams.length; i++) { // For all exams
+						exams += `${i === 0 ? "" : ", "}<span>${convertExamToText(course.exams[i])} Exam</span>`; // Add the exam to the list
 					}
-					divs[1].innerHTML = creds;
-					divs[2].innerHTML = exams;
-					let pres = "";
-					let presOrComplete = false;
-					for (var i = 0; i < course.prerequisites.length; i++) {
-						if (
-							course.prerequisite_types[i] === PREREQUISITE_OR &&
-							takenCourses.findIndex((e) => {
-								return e.name === course.prerequisites[i];
-							}) != -1
-						) {
-							presOrComplete = true;
-							break;
-						}
-					}
-					let pres_complete = true;
-					for (var i = 0; i < course.prerequisites.length; i++) {
-						let svg = "";
+					divs[2].innerHTML = exams; // Display exams
+					let prerequisites = ""; // HTML of prerequisites to display
+					let prerequisitesOrComplete = coursePrerequisitesMet(course, true)[1]; // Variable to track if prerequisites are complete
+					let prerequisites_complete = true;
+					for (var i = 0; i < course.prerequisites.length; i++) { // Go through all the prerequisites
+						let svg = ""; // The SVG to add to the end of the prerequisite
 						if (
 							takenCourses.findIndex((e) => {
 								return e.name === course.prerequisites[i];
 							}) === -1
-						) {
-							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) {
+						) { // If the course is NOT complete
+							if (prerequisitesOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If it's a OR and we know that there is another one, display an N/A symbol
 								svg = NA_SVG;
-							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) {
+							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's a recommend course display an N/A symbol because it's not required
 								svg = NA_SVG;
-							} else {
+							} else { // If it's just not done
 								svg = X_SVG;
-								pres_complete = false;
+								prerequisites_complete = false;
 							}
 						} else {
-							svg = CHECKMARK_SVG;
+							svg = CHECKMARK_SVG; // Prerequisite is complete and can be marked with a check
 						}
-						pres += `${i === 0 ? "" : ",&nbsp"}<span>${course.prerequisites[i]}</span>${svg}`;
+						prerequisites += `${i === 0 ? "" : ",&nbsp"}<span>${course.prerequisites[i]}</span>${svg}`; // Add the prerequisite with the SVG
 					}
-					document.getElementById("pres").innerHTML = pres;
-					let pretitle = document.getElementById("pretitle");
-					pretitle.innerHTML = pres_complete ? "COMPLETE " + CHECKMARK_SVG : "INCOMPLETE " + X_SVG;
-					pretitle.className = pres_complete ? "accepted" : "failed";
+					document.getElementById("pres").innerHTML = prerequisites; // Display all the prerequisites
+					let prerequisiteTitle = document.getElementById("pretitle"); // The element for if all the prerequisites are met
+					prerequisiteTitle.innerHTML = prerequisites_complete ? "COMPLETE " + CHECKMARK_SVG : "INCOMPLETE " + X_SVG;
+					prerequisiteTitle.className = prerequisites_complete ? "accepted" : "failed";
 					errorHandle(() => {
-						GeneratePrerequisiteGraph(course);
+						GeneratePrerequisiteGraph(course); // Generate the prerequisite graph
 					});
 				}
 				function checkIfEsr(course) {
