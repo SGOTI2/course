@@ -312,64 +312,70 @@
 					}
 					return true; // All the prerequisites are complete
 				}
-				/**
-				 * Display a course on the screen
-				 * 
-				 * @param {course} course - The course to display
-				 * @returns {void}
-				 */
 				function showCourse(course) {
-					document.getElementById("infobox").style.display = "flex"; // The default display is none, set it so it's visible
-					document.querySelector("#infobox > #infoboxdata > h3").innerHTML = course.name; // Set the course name
-					let divs = document.querySelectorAll("#infobox > #infoboxdata > div"); // A list of div's in infoboxdata
-					divs[0].innerHTML = course.cid; // Set the course ID
-					let credits = ""; // HTML of credits to display
-					for (var i = 0; i < course.credits.length; i++) { // For all credits
-						let creditName = convertCreditToText(course.credits[i][0]); // Get credit name in text
-						credits += `${i === 0 ? "" : ", "}<span>${creditName === "Commencement" ? 1 : course.credits[i][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit set the number of credits to 1 (The default is 0)
+					document.getElementById("infobox").style.display = "flex";
+					document.querySelector("#infobox > #infoboxdata > h3").innerHTML = course.name;
+					let divs = document.querySelectorAll("#infobox > #infoboxdata > div");
+					divs[0].innerHTML = course.cid;
+					let creds = "";
+					for (var i = 0; i < course.credits.length; i++) {
+						let cctt = convertCreditToText(course.credits[i][0]);
+						if (cctt === "Commencement") {
+							creds += `${i === 0 ? "" : ", "}<span>1 ${cctt} Credit</span>`;
+						} else {
+							creds += `${i === 0 ? "" : ", "}<span>${course.credits[i][1]} ${cctt} Credit</span>`;
+						}
 					}
-					divs[1].innerHTML = credits; // Display credits
-					let exams = ""; // HTML of exams to display
-					for (var i = 0; i < course.exams.length; i++) { // For all exams
-						exams += `${i === 0 ? "" : ", "}<span>${convertExamToText(course.exams[i])} Exam</span>`; // Add the exam to the list
+					let exams = "";
+					for (var i = 0; i < course.exams.length; i++) {
+						let ectt = convertExamToText(course.exams[i]);
+						exams += `${i === 0 ? "" : ", "}<span>${ectt} Exam</span>`;
 					}
-					divs[2].innerHTML = exams; // Display exams
-					let prerequisites = ""; // HTML of prerequisites to display
-					let prerequisitesOrComplete = coursePrerequisitesMet(course, true)[1]; // Variable to track if prerequisites are complete
-					let prerequisites_complete = true;
-					for (var i = 0; i < course.prerequisites.length; i++) { // Go through all the prerequisites
-						let svg = ""; // The SVG to add to the end of the prerequisite
+					divs[1].innerHTML = creds;
+					divs[2].innerHTML = exams;
+					let pres = "";
+					let presOrComplete = false;
+					for (var i = 0; i < course.prerequisites.length; i++) {
+						if (
+							course.prerequisite_types[i] === PREREQUISITE_OR &&
+							takenCourses.findIndex((e) => {
+								return e.name === course.prerequisites[i];
+							}) != -1
+						) {
+							presOrComplete = true;
+							break;
+						}
+					}
+					let pres_complete = true;
+					for (var i = 0; i < course.prerequisites.length; i++) {
+						let svg = "";
 						if (
 							takenCourses.findIndex((e) => {
 								return e.name === course.prerequisites[i];
 							}) === -1
-						) { // If the course is NOT complete
-							if (prerequisitesOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If it's a OR and we know that there is another one, display an N/A symbol
+						) {
+							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) {
 								svg = NA_SVG;
-							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's a recommend course display an N/A symbol because it's not required
+							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) {
 								svg = NA_SVG;
-							} else { // If it's just not done
+							} else {
 								svg = X_SVG;
-								prerequisites_complete = false;
+								pres_complete = false;
 							}
 						} else {
-							svg = CHECKMARK_SVG; // Prerequisite is complete and can be marked with a check
+							svg = CHECKMARK_SVG;
 						}
-						prerequisites += `${i === 0 ? "" : ",&nbsp"}<span>${course.prerequisites[i]}</span>${svg}`; // Add the prerequisite with the SVG
+						pres += `${i === 0 ? "" : ",&nbsp"}<span>${course.prerequisites[i]}</span>${svg}`;
 					}
-					document.getElementById("pres").innerHTML = prerequisites; // Display all the prerequisites
-					let prerequisiteTitle = document.getElementById("pretitle"); // The element for if all the prerequisites are met
-					prerequisiteTitle.innerHTML = prerequisites_complete ? "COMPLETE " + CHECKMARK_SVG : "INCOMPLETE " + X_SVG;
-					prerequisiteTitle.className = prerequisites_complete ? "accepted" : "failed";
-					errorHandle(GeneratePrerequisiteGraph, course);
+					document.getElementById("pres").innerHTML = pres;
+					let pretitle = document.getElementById("pretitle");
+					pretitle.innerHTML = pres_complete ? "COMPLETE " + CHECKMARK_SVG : "INCOMPLETE " + X_SVG;
+					pretitle.className = pres_complete ? "accepted" : "failed";
+					errorHandle(() => {
+						GeneratePrerequisiteGraph(course);
+					});
 				}
-				/**
-				 * Check if the user needs to input their regents score for the course to calculate diploma progress
-				 * 
-				 * @param {course} course - Course to test
-				 * @returns {[boolean, number]} - Do we need to prompt for score and for what credit type
-				*/
-				function checkIfExamScoreRequired(course) {
+				function checkIfEsr(course) {
 					switch (course.cid) {
 						case "0406":
 							return [true, MATH_CREDIT]
@@ -382,61 +388,41 @@
 						case "0443":
 							return [true, MATH_CREDIT]
 						default:
-							return [false, 0] // It does not match a course we need a grade for
+							return [false, 0]
 					}
 				}
-				/**
-				 * Add the exam and score to the credit type
-				 * 
-				 * @param {course} cc - The course to add the score for
-				 * @param {number} score - The score on the exam
-				 * @param {credit} type - The credit type for the course
-				 * @returns {void}
-				*/
-				function pushRegentsExamScore(cc, score, type) {
-					let addingData = [cc.cid, score] // The data being added
+				function pushRes(cc, score, type) {
+					let addingData = [cc.cid, score]
 					switch (type) {
 						case MATH_CREDIT:
-							GradeExamCount.math.push(addingData) // Add to math exams
+							GradeExamCount.math.push(addingData)
 							return
 					}
 				}
-				/**
-				 * Check and prompt if needed for a regents exam score
-				 * 
-				 * @param {course} cc - The course to check and prompt for
-				 * @returns {Promise | void} - Promise for when the score is complete
-				*/
-				async function promptForRegentsExamScore(cc) {
-					let checkResult = checkIfExamScoreRequired(cc) // Check if we need the score
+				async function promptForRes(cc) {
+					let checkResult = checkIfEsr(cc)
 					if (!checkResult[0]) {
-						return; // If we don't need a score, don't continue
+						return;
 					}
 					return new Promise((resolve) => {
-						document.getElementById("res").style.display = "block"; // Unhide the prompt
-						let rescalcElement = document.getElementById("rescalc"); // Get the calculate button
-						rescalcElement.addEventListener("click", () => { // When clicked
-							let input = document.getElementById("resinp") // Get the input box
-							let matched = input.value.match(/\d+/g) // Get the numbers in the box
-							let out = "" // The output score
-							for (let i = 0; i < matched.length; i++) { // Go through all of the numbers in the input box
-								out += (matched[i]).toString() // This needs to be a string because we need to add all of the digits next to each other and not together. ex. ("1"+"5"="15") instead of (1+5 = 6)
+						document.getElementById("res").style.display = "block";
+						let elem = document.getElementById("rescalc");
+						elem.addEventListener("click", () => {
+							let input = document.getElementById("resinp")
+							let matched = input.value.match(/\d+/g)
+							let out = ""
+							for (let i = 0; i < matched.length; i++) {
+								out += parseInt(matched[i])
 							}
-							pushRegentsExamScore(cc, out, parseInt(checkResult[1])) // Add it to the exam scores
-							document.getElementById("res").style.display = "none"; // Hide the prompt
-							resolve("") // We now have the exam score and can return
+							pushRes(cc, out, checkResult[1])
+							document.getElementById("res").style.display = "none";
+							resolve("")
 						}, { once: true })
 					})
 				}
-				/**
-				 * Add a course to taken courses from a click event
-				 * 
-				 * @param {MouseEvent} e - The event from the click listener
-				 * @returns {void}
-				*/
 				async function addTakenCourse(e) {
-					var cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])]; // Get the course index and get the course from the element ID
-					if (e.target.id === "ell") { // If the event is triggered for the info button show the course and return
+					var cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])];
+					if (e.target.id === "ell") {
 						showCourse(cc);
 						return;
 					}
@@ -444,50 +430,41 @@
 						takenCourses.findIndex((e) => {
 							return e === cc;
 						}) === -1
-					) { // If the course has not been taken
-						var ev = e.currentTarget; // Get the event target
-						await promptForRegentsExamScore(cc); // See if we need a score
-						takenCourses.push(cc); // Add the course to taken courses
-						ev.lastChild.innerHTML = CHECKMARK_SVG + ev.lastChild.innerHTML; // Add a checkmark to the start of the info area
-						PropagateTakenCourses(); // Update the list of taken courses
-						PropagateCourseChart(); // Update the main graph
-					} else { // If we have taken the course
+					) {
+						var ev = e.currentTarget;
+						await promptForRes(cc);
+						takenCourses.push(cc);
+						ev.lastChild.innerHTML = CHECKMARK_SVG + ev.lastChild.innerHTML;
+						PropagateTakenCourses();
+						PropagateCourseChart();
+					} else {
 						takenCourses.splice(
 							takenCourses.findIndex((e) => {
 								return e === cc;
 							}),
 							1
-						); // Remove it from taken courses
-						e.currentTarget.lastChild.firstChild.remove(); // Remove the checkmark
-						PropagateTakenCourses(); // Update the list of taken courses
-						PropagateCourseChart(); // Update the main graph
+						);
+						e.currentTarget.lastChild.firstChild.remove();
+						PropagateTakenCourses();
+						PropagateCourseChart();
 					}
 				}
-				/**
-				 * Update the search results for taken courses
-				 * 
-				 * @returns {void}
-				 */
 				function PropagateTakenCourseSearchResults() {
-					document.getElementById("addcompletesugglist").innerHTML = ""; // Clear the results
+					document.getElementById("addcompletesugglist").innerHTML = "";
 					let results = searchCourses(
 						document.getElementById("addcompletename").value,
 						document.getElementById("addcompletecid").value
-						); // Search courses with the user's search
-					if (results.length === 0) {
-						if (document.getElementById("addcompletename").value === "" && document.getElementById("addcompletecid").value === "") {
-							document.getElementById("addcompletesugglist").innerHTML = "<p>Start Typing...</p>"; // If the search areas are blank, ask the user to start typing
-							return
-						}
-						document.getElementById("addcompletesugglist").innerHTML = "<p>No Results</p>"; // If there are no results, show that
-						return;
-					}
-					var frag = document.createDocumentFragment(); // Fragment of what we are filling the results with
-					for (var i = 0; i < results.length; i++) { // Go through all the courses matching the users input
-						let credits = "";
-						for (var creditIndex = 0; creditIndex < results[i].credits.length; creditIndex++) { // Go through all the credits
-							let creditName = convertCreditToText(results[i].credits[creditIndex][0]); // Get credit name in text
-							credits += `${creditIndex === 0 ? "" : DIVIDER_SVG+" "}<span>${creditName === "Commencement" ? "" : results[i].credits[creditIndex][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit don't display a number
+					);
+					var frag = document.createDocumentFragment();
+					for (var i = 0; i < results.length; i++) {
+						let creds = "";
+						for (var ci = 0; ci < results[i].credits.length; ci++) {
+							let cctt = convertCreditToText(results[i].credits[ci][0]);
+							if (cctt === "Commencement") {
+								creds += `${DIVIDER_SVG}<span>${cctt} Credit</span>`;
+							} else {
+								creds += `${DIVIDER_SVG}<span>${results[i].credits[ci][1]} ${cctt} Credit</span>`;
+							}
 						}
 						let tmp = `
 							<div class="tcf">
@@ -506,38 +483,35 @@
 										: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>'
 								}
 								<div class="cid">${results[i].cid}</div>
-								${DIVIDER_SVG}
-								${credits}
-							</div>`; // Generate the HTML
-						let temp = document.createElement("li"); // The element we are making
-						temp.innerHTML = tmp; // Set the html to what we have before
+								${creds}
+							</div>`;
+						let temp = document.createElement("li");
+						temp.innerHTML = tmp;
 						temp.id =
 							"atcid" +
 							Courses.findIndex((e) => {
 								return e === results[i];
-							}); // Set it's ID to it's course id so we can add it later
-						temp.addEventListener("click", addTakenCourse); // Make it work 
-						frag.appendChild(temp); // Add it to the list
+							});
+						temp.addEventListener("click", addTakenCourse);
+						frag.appendChild(temp);
 					}
-					document.getElementById("addcompletesugglist").appendChild(frag); // Add all the results to the HTML
+					document.getElementById("addcompletesugglist").appendChild(frag);
+					if (results.length === 0) {
+						document.getElementById("addcompletesugglist").innerHTML = "<p>No Results</p>";
+					}
 				}
-				/**
-				 * Display the taken courses on the screen
-				 * 
-				 * @returns {void}
-				 */
 				function PropagateTakenCourses() {
-					document.getElementById("takenCourses").innerHTML = ""; // Clear the list of taken courses
-					if (takenCourses.length === 0) {
-						document.getElementById("takenCourses").innerHTML = "<p>Click + to add a Course</p>"; // Show how to add a course
-						return
-					}
-					var frag = document.createDocumentFragment(); // Create a HTML fragment that will be added
-					for (let i = 0; i < takenCourses.length; i++) { // Go through all taken courses
-						let credits = ""; // The credits for the course
-						for (var creditIndex = 0; creditIndex < takenCourses[i].credits.length; creditIndex++) { // Go through all the credits
-							let creditName = convertCreditToText(takenCourses[i].credits[creditIndex][0]); // Get credit name in text
-							credits += `${DIVIDER_SVG} <span>${creditName === "Commencement" ? "" : takenCourses[i].credits[creditIndex][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit don't display a number
+					document.getElementById("takenCourses").innerHTML = "";
+					var frag = document.createDocumentFragment();
+					for (let i = 0; i < takenCourses.length; i++) {
+						let creds = "";
+						for (var ci = 0; ci < takenCourses[i].credits.length; ci++) {
+							let cctt = convertCreditToText(takenCourses[i].credits[ci][0]);
+							if (cctt === "Commencement") {
+								creds += `${DIVIDER_SVG}<span>${cctt} Credit</span>`;
+							} else {
+								creds += `${DIVIDER_SVG}<span>${takenCourses[i].credits[ci][1]} ${cctt} Credit</span>`;
+							}
 						}
 						let tmp = `
 						<div>
@@ -548,47 +522,43 @@
 						}</span></h5>
 							<div class="tcf">
 								<div class="cid">${takenCourses[i].cid}</div>
-								${credits}
+								${creds}
 							</div>
 						</div>
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" id="trash">
 							<path id="trash" d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
 							<path id="trash" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-						</svg>`; // Generate the HTML
-						let temp = document.createElement("li"); // The element that we are making
-						temp.innerHTML = tmp; // Set the html to what we have before
+						</svg>`;
+						let temp = document.createElement("li");
+						temp.innerHTML = tmp;
 						temp.id =
 							"tcipu" +
 							Courses.findIndex((e) => {
 								return e === takenCourses[i];
-							}); // Set it's ID to it's course id so we can view it later
-						temp.className = "tcf"; // Styling
+							});
+						temp.className = "tcf";
 						temp.addEventListener("click", (e) => {
-							if (e.target.id === "trash") { // If the user clicks the trash button
+							if (e.target.id === "trash") {
 								console.log(i);
-								takenCourses.splice(i, 1); // Remove the course from taken courses
-								PropagateTakenCourseSearchResults(); // Update UI
+								takenCourses.splice(i, 1);
+								PropagateTakenCourseSearchResults();
 								PropagateTakenCourses();
 								PropagateCourseChart();
 							} else {
-								showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]); // Show the course if not trashing it
+								showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]);
 							}
 						});
-						frag.appendChild(temp); // Add it to the list of taken courses
+						frag.appendChild(temp);
 					}
-					document.getElementById("takenCourses").appendChild(frag); // Show the new HTML
+					document.getElementById("takenCourses").appendChild(frag);
+					if (takenCourses.length === 0) {
+						document.getElementById("takenCourses").innerHTML = "<p>Click + to add a Course</p>";
+					}
 					CalculateDiploma();
 				}
-				/**
-				 * Run a function and handle the errors produced by running it
-				 * 
-				 * @param {(...args) => void} func - The function to execute
-				 * @param {any} - Arguments to pass the function
-				 * @returns {void}
-				 */
-				function errorHandle(func, ...args) {
+				function errorHandle(func) {
 					try {
-						func(...args); // Run the function
+						func();
 					} catch (e) {
 						presentError(
 							"Unknown Error - Contact Creator! <br><br><pre>Name: " +
@@ -599,36 +569,30 @@
 								e.stack +
 								"</pre>",
 							e
-						); // Present an error if caught
+						);
 					}
 				}
-				/**
-				 * Load event listeners that need the DOM to finish loading
-				 * 
-				 * @returns {void}
-				 */
 				function loadCall() {
-					document.getElementById("addcomplete").addEventListener("click", () => { // + Button
-						document.getElementById("addcompletebox").style.display = "flex"; // Unhide the search panel
-						document.getElementById("addcompletename").focus() // Focus the name search box
+					document.getElementById("addcomplete").addEventListener("click", () => {
+						document.getElementById("addcompletebox").style.display = "flex";
 						errorHandle(PropagateTakenCourseSearchResults);
 					});
-					document.getElementById("addcompleteclose").addEventListener("click", () => { // Close button on search panel
-						document.getElementById("addcompletebox").style.display = "none"; // Hide the panel
+					document.getElementById("addcompleteclose").addEventListener("click", () => {
+						document.getElementById("addcompletebox").style.display = "none";
 					});
-					document.getElementById("addcompletename").addEventListener("keyup", () => { // Name search box
+					document.getElementById("addcompletename").addEventListener("keyup", () => {
 						errorHandle(PropagateTakenCourseSearchResults);
 					});
-					document.getElementById("addcompletecid").addEventListener("keyup", () => { // Course ID search box
+					document.getElementById("addcompletecid").addEventListener("keyup", () => {
 						errorHandle(PropagateTakenCourseSearchResults);
 					});
-					document.getElementById("infoclose").addEventListener("click", () => { // Course panel hide
+					document.getElementById("infoclose").addEventListener("click", () => {
 						document.getElementById("infobox").style.display = "none";
 					});
-					document.getElementById("creditFilter").addEventListener("change", () => { // Credit type dropdown
+					document.getElementById("creditFilter").addEventListener("change", () => {
 						errorHandle(PropagateCourseChart);
 					});
-					document.getElementById("darkLightToggle").addEventListener("change", (e) => { // Dark button toggle
+					document.getElementById("darkLightToggle").addEventListener("change", (e) => {
 						if (e.target.checked) {
 							document.documentElement.setAttribute("data-theme", "dark");
 							isDarkMode = true;
@@ -636,37 +600,37 @@
 							document.documentElement.setAttribute("data-theme", "light");
 							isDarkMode = false;
 						}
-						PropagateTakenCourses(); // Update the UI to dark mode
+						PropagateTakenCourses();
 						PropagateCourseChart();
 					});
+					let gradeFilters = document.getElementsByClassName("glfi")
 					// GLFI = Grade Level Filter Index
-					let gradeFilters = document.getElementsByClassName("glfi") // Grade level filters, list of the elements
-					for (let glfi = 0; glfi < gradeFilters.length; glfi++) { // Go through all of the filters
-						gradeFilters[glfi].addEventListener("change", (e) => { // Add a listener to each one if they get clicked
-							filterGrades = [] // Reset the filters
-							let gradeFilters = document.getElementsByClassName("glfi") // Get all of the filter elements
-							let overrideFalse = false // Set all the filters to unchecked
-							if (gradeFilters[0].checked && e.target.checked && e.target != gradeFilters[0]) { // If any element is checked other than the first one (All Grades), uncheck the first one (All Grades).
-								gradeFilters[0].checked = false // Uncheck the the first one (All Grades)
-							} else if (gradeFilters[0].checked) { // If the first one (All Grades) is checked, uncheck all the other filters
-								filterGrades = [9,10,11,12] // Reset the grades allowed
-								overrideFalse = true // Uncheck the rest
+					for (let glfi = 0; glfi < gradeFilters.length; glfi++) {
+						gradeFilters[glfi].addEventListener("change", (e) => {
+							filterGrades = []
+							let gradeFilters = document.getElementsByClassName("glfi")
+							let overrideFalse = false
+							if (gradeFilters[0].checked && e.target.checked && e.target != gradeFilters[0]) {
+								gradeFilters[0].checked = false
+							} else if (gradeFilters[0].checked) {
+								filterGrades = [9,10,11,12]
+								overrideFalse = true
 							}
-							for (let glfi = 0; glfi < gradeFilters.length; glfi++) { // Go through all the filters
-								if (overrideFalse && glfi != 0) { // If the uncheck variable is on and the element is not the first one (All Grades), uncheck it.
-									gradeFilters[glfi].checked = false // Set filter to unchecked
+							for (let glfi = 0; glfi < gradeFilters.length; glfi++) {
+								if (overrideFalse && glfi != 0) {
+									gradeFilters[glfi].checked = false
 									continue
 								}
-								if (gradeFilters[glfi].checked) { // If it is checked and we are not setting it to false, add the id to the list of filters.
-									filterGrades.push(8+glfi) // Add to the filter
+								if (gradeFilters[glfi].checked) {
+									filterGrades.push(8+glfi)
 								}
 							}
-							PropagateCourseChart() // Update the course chart
+							PropagateCourseChart()
 						})
 					}
-					gradeFilters[0].checked = true // Set the All Courses checkbox to checked initially
+					gradeFilters[0].checked = true
                     if (isDarkMode) {
-                        document.getElementById("darkLightToggle").checked = true; // If we are in dark mode update the toggle
+                        document.getElementById("darkLightToggle").checked = true;
                     }
 					errorHandle(CalculateDiploma);
 					errorHandle(PropagateCourseChart);
