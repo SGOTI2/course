@@ -28,6 +28,8 @@
 		<script src="./courseData.js"></script>
 		<script src="./plotlyDark.js"></script>
 		<script src="./conversion.js"></script>
+		<script src="./filterSearch.js"></script>
+		<script src="./graphing.js"></script>
 		<script type="text/javascript" defer>
 			var isDarkMode = false;
 			if (window.ERep === undefined) {
@@ -70,248 +72,13 @@
 				if (window.CONVERSION_LOADED === undefined) {
 					throw new NotFound("CONVERSION_NOT_FOUND")
 				}
+				if (window.FILTER_SEARCH_LOADED === undefined) {
+					throw new NotFound("FILTER_SEARCH_NOT_FOUND")
+				}
+				if (window.GRAPHING_LOADED === undefined) {
+					throw new NotFound("GRAPHING_NOT_FOUND")
+				}
 				var takenCourses = [];
-				var filterGrades = [9,10,11,12]
-				/**
-				 * Search Courses for a course
-				 * 
-				 * Either name, cid, or both can be passed to find a course
-				 * @param {string} name - The name of the course to search for
-				 * @param {string} cid - The courseID of the course to search for
-				 * @returns {course} - A course object (from courseData)
-				 */
-				function searchCourses(name = "", cid = "") {
-					let foundCourses = [];
-					for (let i = 0; i < Courses.length; i++) { // Iterate through courses
-						if (
-							(Courses[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
-							(Courses[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "")
-						) { // Test if the name or cid matches
-							foundCourses.push(Courses[i]); // Add course to found courses
-						}
-					}
-					return foundCourses;
-				}
-				var scannedCourses = [];
-				/**
-				 * Search Prerequisites for a course and output them as a graph relation list
-				 * 
-				 * Graph Relation list - [PrerequisiteName, StartingCourseName, PrerequisiteType]
-				 * @param {string} inname - The name of the course
-				 * @param {[String]} prerequisites - A list of prerequisites to search through
-				 * @param {[PREREQUISITE]} prerequisite_types - A list of prerequisites types that match prerequisites argument
-				 * @param {boolean} displayNoPrerequisite - Should the 'No Prerequisite' be returned
-				 * @param {number} recursion - The depth of recursion that the function is at, prevents infinite loops
-				 * @returns {[[string, string, number]]} - Graph Relation list - [PrerequisiteName, StartingCourseName, PrerequisiteType], used for generation of graphs
-				 */
-				function preSearch(inname, prerequisites, prerequisite_types, displayNoPrerequisite = false, recursion = 0) {
-					let coursePrerequisites = [];
-					if (prerequisites.length === 0 && displayNoPrerequisite) { // If there are no prerequisites and displayNoPrerequisite = true
-						return [["No Prerequisite", inname, PREREQUISITE_NONE]]; // Return relation to no prerequisites
-					}
-					for (let i = 0; i < prerequisites.length; i++) {
-						let prerequisite = [prerequisites[i], inname, prerequisite_types[i]]; // The value we will add if it's not already scanned
-						if (
-							scannedCourses.findIndex((e) => {
-								return e[0] === prerequisite[0] && e[1] === prerequisite[1] && e[2] === prerequisite[2];
-							}) === -1
-						) { // Test if the prerequisite matches a already scanned prerequisite
-							coursePrerequisites.push(prerequisite); // Add to course prerequisites
-							let results = searchCourses(prerequisites[i]); // Search for the prerequisite course
-							if (results.length >= 1 && recursion <= 10) { // If it exists and we have not hit max recursion
-								if (results[0].prerequisites.length > 0) { // If it has prerequisites
-									for (var prerequisiteIndex = 0; prerequisiteIndex < results.length; prerequisiteIndex++) { // Go through each prerequisite
-										if (results[prerequisiteIndex].prerequisites.length > 0) { // If it has prerequisites
-											let out = preSearch(
-												prerequisites[i],
-												results[prerequisiteIndex].prerequisites,
-												results[prerequisiteIndex].prerequisite_types,
-												displayNoPrerequisite,
-												recursion + 1
-												); // Search through it's prerequisites
-											coursePrerequisites = coursePrerequisites.concat(out); // Add them to coursePrerequisites
-										}
-									}
-								}
-							}
-							scannedCourses.push(prerequisite); // Add to scanned prerequisites
-						}
-					}
-					return coursePrerequisites;
-				}
-				/**
-				 * Generate the Prerequisite graph for a course
-				 * 
-				 * @param {course} course - The course to generate the graph for
-				 * @returns {void}
-				 */
-				function GeneratePrerequisiteGraph(course) {
-					var layout = {
-						font: {
-							size: 10,
-						},
-						margin: {
-							t: 0,
-							l: 0,
-							r: 0,
-							b: 0,
-						},
-						template: isDarkMode ? plotly_dark : {},
-					}; // The layout and theme for the graph
-					var data = [];
-					try {
-						scannedCourses = [];
-						data = preSearch(course.name, course.prerequisites, course.prerequisite_types);
-					} catch (e2) {
-						presentError(e2, e2, " - Data Parsing");
-					}
-					var label = [];
-					var color = [];
-					var linkcolor = [];
-					var source = [];
-					var target = [];
-					var value = [];
-					for (var i = 0; i < data.length; i++) { // Go through the prerequisite data
-						var inID = label.findIndex((e) => {
-							return e === data[i][0] || e === data[i][0] + " &#10003;";
-						}); // The index of the label (part) if it was already generated
-						let greyify = false;
-						if (inID === -1) { // If the label (part) was not generated, generate it
-							let taken =
-								takenCourses.findIndex((e) => {
-									return e.name === data[i][0];
-								}) === -1; // Was the course taken before?
-							label.push(taken ? data[i][0] : data[i][0] + " &#10003;"); // If taken label it with a checkmark and add it to labels
-							let or_check = coursePrerequisitesMet(
-								Courses[
-									Courses.findIndex((e) => {
-										return e.name === data[i][1] || e.name === data[i][1] + " &#10003;";
-									})
-								], // The root course that this prerequisite is required for
-								true
-							); // Is there a OR part in the prerequisites for the root course?
-							if (or_check[0] && data[i][2] === PREREQUISITE_OR && or_check[1]) { // If there is a OR prerequisite and the current prerequisite is part of it
-								color.push(taken ? LIGHT_GREY : LIGHT_GREEN); // Make the label green if it's taken and grey if it's not
-								if (taken) {
-									greyify = true; // Make the link grey
-								}
-							} else {
-								color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the prerequisite is not part of a OR set it's color accordingly
-							}
-							inID = label.length - 1; // The label is now generated and is at the end of the label array
-						}
-						var outID = label.findIndex((e) => {
-							return e === data[i][1] || e === data[i][1] + " &#10003;";
-						}); // The index of the label (part) if it was already generated
-						if (outID === -1) { // If the label (part) was not generated, generate it
-							let taken =
-								takenCourses.findIndex((e) => {
-									return e.name === data[i][1];
-								}) === -1; // Was the course taken before?
-							label.push(taken ? data[i][1] : data[i][1] + " &#10003;"); // If taken label it with a checkmark and add it to labels
-							color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the course is complete color the label gray, if not color it the way it should be
-							outID = label.length - 1; // The label is now generated and is at the end of the label array
-						}
-						source.push(inID); // Create a link from the root course
-						target.push(outID); // To the prerequisite
-						let lnc = ""; // Link color
-						if (
-							takenCourses.findIndex((e) => {
-								return e.name === data[i][0];
-							}) === -1
-						) { // If not taken
-							if (greyify) {
-								lnc = LIGHT_GREY; // If prerequisite is handled by another color it grey, (only for OR)
-							} else {
-								lnc = convertPrerequisiteTypeToColorLight(data[i][2]); // Color it accordingly
-							}
-						} else {
-							lnc = LIGHT_GREEN; // We have met the prerequisite, color the link green
-						}
-						linkcolor.push(lnc); // Add the link color to the link
-						value.push(1); // Make sure all links are at the same scale
-					}
-					var dataObj = {
-						type: "sankey",
-						orientation: "h",
-						node: {
-							pad: 10,
-							thickness: 10,
-							line: {
-								color: "black",
-								width: 0,
-							},
-							label: label,
-							color: color,
-						},
-
-						link: {
-							source: source,
-							target: target,
-							value: value,
-							color: linkcolor,
-						},
-						//arrangement: 'snap',
-						hoverinfo: false,
-					}; // The data that we are adding in a format that Plotly can understand
-					var dataObj = [dataObj]; // Put it in a array so Plotly can use it
-					Plotly.react("preflow", dataObj, layout, {
-						scrollZoom: true,
-						responsive: true,
-						modebar_add: ["zoom", "pan"],
-					}); // Generate the graph in div#preflow (found in: index.html > html > body > div#infobox > div > div#preflow)
-				}
-				/**
-				 * Checks if the prerequisites are met for a course
-				 * 
-				 * @param {course} inname - The name of the course
-				 * @param {boolean} just_or - Should only prerequisites that are marked with OR should be checked
-				 * @returns {boolean | [boolean, boolean]} - If just_or is true return if there was an OR and if it is satisfied, If just_or is false return if all prerequisites are met
-				 */
-				function coursePrerequisitesMet(course, just_or = false) {
-					if (course === undefined) {
-						ERep.Log("It appears that a undefined course was passed to check Pre-Req's");
-						return false;
-					}
-					let presOrComplete = false;
-					let containedOr = false;
-					for (var i = 0; i < course.prerequisites.length; i++) { // Search through prerequisites
-						if (course.prerequisite_types[i] === PREREQUISITE_OR) {
-							containedOr = true; // There is a OR in the prerequisites
-						}
-						if (
-							course.prerequisite_types[i] === PREREQUISITE_OR &&
-							takenCourses.findIndex((e) => {
-								return e.name === course.prerequisites[i];
-							}) != -1
-						) { // Is one of the OR prerequisites complete? If complete break
-							presOrComplete = true;
-							break;
-						}
-					}
-					if (just_or) {
-						return [containedOr, presOrComplete]; // See @returns
-					}
-					if (!presOrComplete && containedOr) {
-						return false; // If the OR prerequisites are not satisfied prerequisites are not complete
-					}
-					for (var i = 0; i < course.prerequisites.length; i++) { // Go through all prerequisites
-						if (
-							takenCourses.findIndex((e) => {
-								return e.name === course.prerequisites[i];
-							}) === -1
-						) { // If the course was not taken
-							if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If OR we have another one that is satisfied
-								continue;
-							} else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
-								continue;
-							} else { // If it's not complete and it's required, the prerequisites are not complete
-								return false;
-							}
-						}
-					}
-					return true; // All the prerequisites are complete
-				}
 				/**
 				 * Display a course on the screen
 				 * 
@@ -362,28 +129,6 @@
 					prerequisiteTitle.innerHTML = prerequisites_complete ? "COMPLETE " + CHECKMARK_SVG : "INCOMPLETE " + X_SVG;
 					prerequisiteTitle.className = prerequisites_complete ? "accepted" : "failed";
 					errorHandle(GeneratePrerequisiteGraph, course);
-				}
-				/**
-				 * Check if the user needs to input their regents score for the course to calculate diploma progress
-				 * 
-				 * @param {course} course - Course to test
-				 * @returns {[boolean, number]} - Do we need to prompt for score and for what credit type
-				*/
-				function checkIfExamScoreRequired(course) {
-					switch (course.cid) {
-						case "0406":
-							return [true, MATH_CREDIT]
-						case "0411":
-							return [true, MATH_CREDIT]
-						case "0442":
-							return [true, MATH_CREDIT]
-						case "0440":
-							return [true, MATH_CREDIT]
-						case "0443":
-							return [true, MATH_CREDIT]
-						default:
-							return [false, 0] // It does not match a course we need a grade for
-					}
 				}
 				/**
 				 * Add the exam and score to the credit type
@@ -671,6 +416,11 @@
 					errorHandle(CalculateDiploma);
 					errorHandle(PropagateCourseChart);
 				}
+				/**
+				 * Calculate all diploma progresses
+				 * 
+				 * @returns {void}
+				 */
 				function CalculateDiploma() {
 					let e = (id, value) => {
 						let cv = parseFloat(document.getElementById(id).innerText) + value;
@@ -683,12 +433,12 @@
 							document.getElementById(id).className = "failed";
 							document.getElementById(id + "-s").innerHTML = X_SVG + "&nbsp;";
 						}
-					};
+					}; // Update and increment the amount of credits earned
 					let r = (id) => {
 						document.getElementById(id).innerText = 0;
 						document.getElementById(id).className = "failed";
 						document.getElementById(id + "-s").innerHTML = X_SVG + "&nbsp;";
-					};
+					}; // Reset
 					r("rd-tc");
 					r("rd-ec");
 					r("rd-ssc");
@@ -730,155 +480,6 @@
 							}
 						}
 					}
-				}
-				function FilterCourse(course) {
-					if (course === undefined) {
-						return false;
-					}
-					let selectedCredit = document.getElementById("creditFilter").value;
-					let creditText = convertCreditToText(course.credits[0][0]);
-					if (selectedCredit != "Any Credit") {
-						if (selectedCredit != creditText) {
-							if (selectedCredit != "Music") {
-								return true;
-							} else if (creditText != "Music (S Dev.)" && creditText != "Music (K/A Dev.)") {
-								return true;
-							}
-						}
-					}
-					var continued = false
-					for (let i = 0; i < course.grade.length; i++) {
-						if (filterGrades.findIndex((e) => e === course.grade[i]) != -1) {
-							continued = true
-							break
-						}
-					}
-					if (!continued) return true
-					return false;
-				}
-				function PropagateCourseChart() {
-					var layout = {
-						font: {
-							size: 10,
-						},
-						margin: {
-							t: 10,
-							l: 10,
-							r: 10,
-							b: 10,
-						},
-						template: isDarkMode ? plotly_dark : {},
-					};
-					var appendData = [];
-					try {
-						scannedCourses = [];
-						for (let i = 0; i < Courses.length; i++) {
-							appendData.push(
-								...preSearch(
-									Courses[i].name,
-									Courses[i].prerequisites,
-									Courses[i].prerequisite_types,
-									true
-								)
-							);
-						}
-					} catch (e2) {
-						presentError(e2, e2, " - Data Parsing");
-					}
-					var label = [];
-					var color = [];
-					var linkcolor = [];
-					var source = [];
-					var target = [];
-					var value = [];
-					for (var i = 0; i < appendData.length; i++) {
-						var inID = label.findIndex((e) => {
-							return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
-						});
-						let inCourseID = Courses.findIndex((e) => {
-							return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
-						});
-						if (FilterCourse(Courses[inCourseID])) {
-							continue;
-						}
-						let greyify = false;
-						if (inID === -1) {
-							let taken =
-								takenCourses.findIndex((e) => {
-									return e.name === appendData[i][0];
-								}) === -1;
-							label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
-							let or_check = coursePrerequisitesMet(Courses[inCourseID], true);
-							if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
-								color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
-								if (taken) {
-									greyify = true;
-								}
-							} else {
-								color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
-							}
-							inID = label.length - 1;
-						}
-						var outID = label.findIndex((e) => {
-							return e === appendData[i][1] || e === appendData[i][1] + " &#10003;";
-						});
-						if (outID === -1) {
-							let taken =
-								takenCourses.findIndex((e) => {
-									return e.name === appendData[i][1];
-								}) === -1;
-							label.push(taken ? appendData[i][1] : appendData[i][1] + " &#10003;");
-							color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
-							outID = label.length - 1;
-						}
-						source.push(inID);
-						target.push(outID);
-						let lnc = "";
-						if (
-							takenCourses.findIndex((e) => {
-								return e.name === appendData[i][0];
-							}) === -1
-						) {
-							if (greyify) {
-								lnc = LIGHT_GREY;
-							} else {
-								lnc = convertPrerequisiteTypeToColorLight(appendData[i][2]);
-							}
-						} else {
-							lnc = LIGHT_GREEN;
-						}
-						linkcolor.push(lnc);
-						value.push(1);
-					}
-					var data = {
-						type: "sankey",
-						orientation: "h",
-						node: {
-							pad: 10,
-							thickness: 5,
-							line: {
-								color: "black",
-								width: 0,
-							},
-							label: label,
-							color: color,
-						},
-
-						link: {
-							source: source,
-							target: target,
-							value: value,
-							color: linkcolor,
-						},
-						//arrangement: 'snap',
-						hoverinfo: false,
-					};
-					var data = [data];
-					Plotly.react("allc", data, layout, {
-						scrollZoom: true,
-						responsive: true,
-						modebar_add: ["zoom", "pan"],
-					});
 				}
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     document.documentElement.setAttribute("data-theme", "dark");
