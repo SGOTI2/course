@@ -23,96 +23,9 @@
 			const LIGHT_GREEN = "#77ff7733";
 			const LIGHT_GREY = "#aaaaaa33";
 		</script>
-		<script src="./plotly.js"></script>
-		<script src="./erep.js"></script>
-		<script src="./courseData.js"></script>
-		<script src="./plotlyDark.js"></script>
-		<script src="./conversion.js"></script>
-		<script src="./filterSearch.js"></script>
-		<script src="./graphing.js"></script>
-		<script src="./ui.js"></script>
-		<script src="./data.js"></script>
-		<script type="text/javascript" defer>
-			var isDarkMode = false;
-			if (window.ERep === undefined) {
-				window.ERep = {
-					Log: (v, l) => {
-						console.log(v);
-					},
-				};
-			}
-			/*Error Handling*/ var l = false;
-			function presentError(m, oe, t = "") {
-				if (!l) {
-					window.onload = () => {
-						l = true;
-						presentError(m, oe, t);
-					};
-					return;
-				}
-				document.getElementById("errormessage").innerHTML = m;
-				document.getElementById("errortype").innerHTML = t;
-				document.getElementById("errorbox").removeAttribute("style");
-				throw oe;
-			}
-			window.onload = () => {
-				l = true;
-				errorHandle(loadCall);
-			};
-			class NotFound extends Error {
-				constructor(message) {
-					super(message);
-				}
-			}
-			try {
-				if (window.COURSE_DATA_LOADED === undefined) {
-					throw new NotFound("COURSE_DATA_NOT_FOUND")
-				}
-				if (window.PLOTLY_DARK_LOADED === undefined) {
-					throw new NotFound("PLOTLY_DARK_NOT_FOUND")
-				}
-				if (window.CONVERSION_LOADED === undefined) {
-					throw new NotFound("CONVERSION_NOT_FOUND")
-				}
-				if (window.FILTER_SEARCH_LOADED === undefined) {
-					throw new NotFound("FILTER_SEARCH_NOT_FOUND")
-				}
-				if (window.GRAPHING_LOADED === undefined) {
-					throw new NotFound("GRAPHING_NOT_FOUND")
-				}
-				if (window.UI_LOADED === undefined) {
-					throw new NotFound("UI_JS_NOT_FOUND")
-				}
-				if (window.DATA_LOADED === undefined) {
-					throw new NotFound("DATA_JS_NOT_FOUND")
-				}
-				if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.documentElement.setAttribute("data-theme", "dark");
-                    isDarkMode = true;
-                }
-                // Generate Build ID
-				//(()=>{let d=new Date();let bi=d.getMonth()+""+d.getDate()+""+d.getFullYear()+""+d.getHours()+""+d.getMinutes()+""+d.getSeconds();presentError(bi,""," - BuildID");})()
-			} catch (e) {
-				if (e instanceof NotFound) {
-					presentError(
-						e.message,
-						e,
-						" - CodeNotFound"
-					);
-				} else {
-					presentError(
-						"Unknown Error - Contact Creator! <br><br><pre>Name: " +
-							e.name +
-							"<br>Message: " +
-							e.message +
-							"<br>Stack: " +
-							e.stack +
-							"</pre>",
-						e
-					);
-				}
-			}
-		</script>
+		<script src="./modules/plotly.js"></script>
+		<script src="./modules/erep.js"></script>
+		<script type="module" src="modules/main.js"></script>
 		<link rel="stylesheet" href="./style.css">
 	</head>
 	<body>

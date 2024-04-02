@@ -1,6 +1,7 @@
 window.DATA_LOADED = true;
-const data = {}
-var takenCourses = [];
+import * as Global from "./global.js"
+export const data = new Global.State({});
+export const takenCourses = new Global.State([]);
 /**
  * Add the exam and score to the credit type
  * 
@@ -9,7 +10,7 @@ var takenCourses = [];
  * @param {credit} type - The credit type for the course
  * @returns {void}
 */
-function pushRegentsExamScore(cc, score, type) {
+export function pushRegentsExamScore(cc, score, type) {
     let addingData = [cc.cid, score] // The data being added
     switch (type) {
         case MATH_CREDIT:
@@ -23,7 +24,7 @@ function pushRegentsExamScore(cc, score, type) {
  * @param {MouseEvent} e - The event from the click listener
  * @returns {void}
 */
-async function addTakenCourse(e) {
+export async function addTakenCourse(e) {
     var cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])]; // Get the course index and get the course from the element ID
     if (e.target.id === "ell") { // If the event is triggered for the info button show the course and return
         showCourse(cc);
@@ -50,28 +51,5 @@ async function addTakenCourse(e) {
         e.currentTarget.lastChild.firstChild.remove(); // Remove the checkmark
         PropagateTakenCourses(); // Update the list of taken courses
         PropagateCourseChart(); // Update the main graph
-    }
-}
-/**
- * Run a function and handle the errors produced by running it
- * 
- * @param {(...args) => void} func - The function to execute
- * @param {any} - Arguments to pass the function
- * @returns {void}
- */
-function errorHandle(func, ...args) {
-    try {
-        func(...args); // Run the function
-    } catch (e) {
-        presentError(
-            "Unknown Error - Contact Creator! <br><br><pre>Name: " +
-                e.name +
-                "<br>Message: " +
-                e.message +
-                "<br>Stack: " +
-                e.stack +
-                "</pre>",
-            e
-        ); // Present an error if caught
     }
 }

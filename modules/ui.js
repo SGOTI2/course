@@ -1,24 +1,28 @@
 window.UI_LOADED = true;
+import * as Global from "./global.js"
+import * as Graphing from "./graphing.js"
+import * as Conversion from "./conversion.js"
+import * as FilterSearch from "./filterSearch.js";
 /**
  * Display a course on the screen
  * 
  * @param {course} course - The course to display
  * @returns {void}
  */
-function showCourse(course) {
+export function showCourse(course) {
     document.getElementById("infobox").style.display = "flex"; // The default display is none, set it so it's visible
     document.querySelector("#infobox > #infoboxdata > h3").innerHTML = course.name; // Set the course name
     let divs = document.querySelectorAll("#infobox > #infoboxdata > div"); // A list of div's in infoboxdata
     divs[0].innerHTML = course.cid; // Set the course ID
     let credits = ""; // HTML of credits to display
     for (var i = 0; i < course.credits.length; i++) { // For all credits
-        let creditName = convertCreditToText(course.credits[i][0]); // Get credit name in text
+        let creditName = Conversion.convertCreditToText(course.credits[i][0]); // Get credit name in text
         credits += `${i === 0 ? "" : ", "}<span>${creditName === "Commencement" ? 1 : course.credits[i][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit set the number of credits to 1 (The default is 0)
     }
     divs[1].innerHTML = credits; // Display credits
     let exams = ""; // HTML of exams to display
     for (var i = 0; i < course.exams.length; i++) { // For all exams
-        exams += `${i === 0 ? "" : ", "}<span>${convertExamToText(course.exams[i])} Exam</span>`; // Add the exam to the list
+        exams += `${i === 0 ? "" : ", "}<span>${Conversion.convertExamToText(course.exams[i])} Exam</span>`; // Add the exam to the list
     }
     divs[2].innerHTML = exams; // Display exams
     let prerequisites = ""; // HTML of prerequisites to display
@@ -48,14 +52,14 @@ function showCourse(course) {
     let prerequisiteTitle = document.getElementById("pretitle"); // The element for if all the prerequisites are met
     prerequisiteTitle.innerHTML = prerequisites_complete ? "COMPLETE " + CHECKMARK_SVG : "INCOMPLETE " + X_SVG;
     prerequisiteTitle.className = prerequisites_complete ? "accepted" : "failed";
-    errorHandle(GeneratePrerequisiteGraph, course);
+    Global.errorHandle(GeneratePrerequisiteGraph, course);
 }
 /**
  * Update the search results for taken courses
  * 
  * @returns {void}
  */
-function PropagateTakenCourseSearchResults() {
+export function PropagateTakenCourseSearchResults() {
     document.getElementById("addcompletesugglist").innerHTML = ""; // Clear the results
     let results = searchCourses(
         document.getElementById("addcompletename").value,
@@ -73,7 +77,7 @@ function PropagateTakenCourseSearchResults() {
     for (var i = 0; i < results.length; i++) { // Go through all the courses matching the users input
         let credits = "";
         for (var creditIndex = 0; creditIndex < results[i].credits.length; creditIndex++) { // Go through all the credits
-            let creditName = convertCreditToText(results[i].credits[creditIndex][0]); // Get credit name in text
+            let creditName = Conversion.convertCreditToText(results[i].credits[creditIndex][0]); // Get credit name in text
             credits += `${creditIndex === 0 ? "" : DIVIDER_SVG+" "}<span>${creditName === "Commencement" ? "" : results[i].credits[creditIndex][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit don't display a number
         }
         let tmp = `
@@ -113,7 +117,7 @@ function PropagateTakenCourseSearchResults() {
  * 
  * @returns {void}
  */
-function PropagateTakenCourses() {
+export function PropagateTakenCourses() {
     document.getElementById("takenCourses").innerHTML = ""; // Clear the list of taken courses
     if (takenCourses.length === 0) {
         document.getElementById("takenCourses").innerHTML = "<p>Click + to add a Course</p>"; // Show how to add a course
@@ -123,7 +127,7 @@ function PropagateTakenCourses() {
     for (let i = 0; i < takenCourses.length; i++) { // Go through all taken courses
         let credits = ""; // The credits for the course
         for (var creditIndex = 0; creditIndex < takenCourses[i].credits.length; creditIndex++) { // Go through all the credits
-            let creditName = convertCreditToText(takenCourses[i].credits[creditIndex][0]); // Get credit name in text
+            let creditName = Conversion.convertCreditToText(takenCourses[i].credits[creditIndex][0]); // Get credit name in text
             credits += `${DIVIDER_SVG} <span>${creditName === "Commencement" ? "" : takenCourses[i].credits[creditIndex][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit don't display a number
         }
         let tmp = `
@@ -156,7 +160,7 @@ function PropagateTakenCourses() {
                 takenCourses.splice(i, 1); // Remove the course from taken courses
                 PropagateTakenCourseSearchResults(); // Update UI
                 PropagateTakenCourses();
-                PropagateCourseChart();
+                Graphing.PropagateCourseChart();
             } else {
                 showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]); // Show the course if not trashing it
             }
@@ -172,7 +176,7 @@ function PropagateTakenCourses() {
  * @param {course} cc - The course to check and prompt for
  * @returns {Promise | void} - Promise for when the score is complete
 */
-async function promptForRegentsExamScore(cc) {
+export async function promptForRegentsExamScore(cc) {
     let checkResult = checkIfExamScoreRequired(cc) // Check if we need the score
     if (!checkResult[0]) {
         return; // If we don't need a score, don't continue
@@ -198,49 +202,49 @@ async function promptForRegentsExamScore(cc) {
 				 * 
 				 * @returns {void}
 				 */
-function loadCall() {
+export function loadCall() {
     document.getElementById("addcomplete").addEventListener("click", () => { // + Button
         document.getElementById("addcompletebox").style.display = "flex"; // Unhide the search panel
         document.getElementById("addcompletename").focus() // Focus the name search box
-        errorHandle(PropagateTakenCourseSearchResults);
+        Global.errorHandle(PropagateTakenCourseSearchResults);
     });
     document.getElementById("addcompleteclose").addEventListener("click", () => { // Close button on search panel
         document.getElementById("addcompletebox").style.display = "none"; // Hide the panel
     });
     document.getElementById("addcompletename").addEventListener("keyup", () => { // Name search box
-        errorHandle(PropagateTakenCourseSearchResults);
+        Global.errorHandle(PropagateTakenCourseSearchResults);
     });
     document.getElementById("addcompletecid").addEventListener("keyup", () => { // Course ID search box
-        errorHandle(PropagateTakenCourseSearchResults);
+        Global.errorHandle(PropagateTakenCourseSearchResults);
     });
     document.getElementById("infoclose").addEventListener("click", () => { // Course panel hide
         document.getElementById("infobox").style.display = "none";
     });
     document.getElementById("creditFilter").addEventListener("change", () => { // Credit type dropdown
-        errorHandle(PropagateCourseChart);
+        Global.errorHandle(Graphing.PropagateCourseChart);
     });
     document.getElementById("darkLightToggle").addEventListener("change", (e) => { // Dark button toggle
         if (e.target.checked) {
             document.documentElement.setAttribute("data-theme", "dark");
-            isDarkMode = true;
+            Global.isDarkMode.value = true;
         } else {
             document.documentElement.setAttribute("data-theme", "light");
-            isDarkMode = false;
+            Global.isDarkMode.value = false;
         }
         PropagateTakenCourses(); // Update the UI to dark mode
-        PropagateCourseChart();
+        Graphing.PropagateCourseChart();
     });
     // GLFI = Grade Level Filter Index
     let gradeFilters = document.getElementsByClassName("glfi") // Grade level filters, list of the elements
     for (let glfi = 0; glfi < gradeFilters.length; glfi++) { // Go through all of the filters
         gradeFilters[glfi].addEventListener("change", (e) => { // Add a listener to each one if they get clicked
-            filterGrades = [] // Reset the filters
+            FilterSearch.filterGrades.value = [] // Reset the filters
             let gradeFilters = document.getElementsByClassName("glfi") // Get all of the filter elements
             let overrideFalse = false // Set all the filters to unchecked
             if (gradeFilters[0].checked && e.target.checked && e.target != gradeFilters[0]) { // If any element is checked other than the first one (All Grades), uncheck the first one (All Grades).
                 gradeFilters[0].checked = false // Uncheck the the first one (All Grades)
             } else if (gradeFilters[0].checked) { // If the first one (All Grades) is checked, uncheck all the other filters
-                filterGrades = [9,10,11,12] // Reset the grades allowed
+                FilterSearch.filterGrades.value = [9,10,11,12] // Reset the grades allowed
                 overrideFalse = true // Uncheck the rest
             }
             for (let glfi = 0; glfi < gradeFilters.length; glfi++) { // Go through all the filters
@@ -249,25 +253,25 @@ function loadCall() {
                     continue
                 }
                 if (gradeFilters[glfi].checked) { // If it is checked and we are not setting it to false, add the id to the list of filters.
-                    filterGrades.push(8+glfi) // Add to the filter
+                    FilterSearch.filterGrades.value.push(8+glfi) // Add to the filter
                 }
             }
-            PropagateCourseChart() // Update the course chart
+            Graphing.PropagateCourseChart() // Update the course chart
         })
     }
     gradeFilters[0].checked = true // Set the All Courses checkbox to checked initially
-    if (isDarkMode) {
+    if (Global.isDarkMode.value) {
         document.getElementById("darkLightToggle").checked = true; // If we are in dark mode update the toggle
     }
-    errorHandle(CalculateDiploma);
-    errorHandle(PropagateCourseChart);
+    Global.errorHandle(CalculateDiploma);
+    Global.errorHandle(Graphing.PropagateCourseChart);
 }
 /**
  * Calculate all diploma progresses
  * 
  * @returns {void}
  */
-function CalculateDiploma() {
+export function CalculateDiploma() {
     let e = (id, value) => {
         let cv = parseFloat(document.getElementById(id).innerText) + value;
         document.getElementById(id).innerText = cv;

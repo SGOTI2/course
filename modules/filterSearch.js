@@ -1,5 +1,9 @@
 window.FILTER_SEARCH_LOADED = true;
-var filterGrades = [9,10,11,12]
+import * as Conversion from "./conversion.js"
+import * as Global from "./global.js"
+import * as CourseData from "./courseData.js"
+import * as Data from "./data.js"
+export const filterGrades = new Global.State([9,10,11,12])
 /**
  * Search Courses for a course
  * 
@@ -10,17 +14,17 @@ var filterGrades = [9,10,11,12]
  */
 function searchCourses(name = "", cid = "") {
     let foundCourses = [];
-    for (let i = 0; i < Courses.length; i++) { // Iterate through courses
+    for (let i = 0; i < CourseData.Courses.length; i++) { // Iterate through courses
         if (
-            (Courses[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
-            (Courses[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "")
+            (CourseData.Courses[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
+            (CourseData.Courses[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "")
         ) { // Test if the name or cid matches
-            foundCourses.push(Courses[i]); // Add course to found courses
+            foundCourses.push(CourseData.Courses[i]); // Add course to found courses
         }
     }
     return foundCourses;
 }
-var scannedCourses = [];
+export const scannedCourses = new Global.State([]);
 /**
  * Search Prerequisites for a course and output them as a graph relation list
  * 
@@ -32,15 +36,15 @@ var scannedCourses = [];
  * @param {number} recursion - The depth of recursion that the function is at, prevents infinite loops
  * @returns {[[string, string, number]]} - Graph Relation list - [PrerequisiteName, StartingCourseName, PrerequisiteType], used for generation of graphs
  */
-function preSearch(inname, prerequisites, prerequisite_types, displayNoPrerequisite = false, recursion = 0) {
+export function preSearch(inname, prerequisites, prerequisite_types, displayNoPrerequisite = false, recursion = 0) {
     let coursePrerequisites = [];
     if (prerequisites.length === 0 && displayNoPrerequisite) { // If there are no prerequisites and displayNoPrerequisite = true
-        return [["No Prerequisite", inname, PREREQUISITE_NONE]]; // Return relation to no prerequisites
+        return [["No Prerequisite", inname, CourseData.PREREQUISITE_NONE]]; // Return relation to no prerequisites
     }
     for (let i = 0; i < prerequisites.length; i++) {
         let prerequisite = [prerequisites[i], inname, prerequisite_types[i]]; // The value we will add if it's not already scanned
         if (
-            scannedCourses.findIndex((e) => {
+            scannedCourses.value.findIndex((e) => {
                 return e[0] === prerequisite[0] && e[1] === prerequisite[1] && e[2] === prerequisite[2];
             }) === -1
         ) { // Test if the prerequisite matches a already scanned prerequisite
@@ -62,7 +66,7 @@ function preSearch(inname, prerequisites, prerequisite_types, displayNoPrerequis
                     }
                 }
             }
-            scannedCourses.push(prerequisite); // Add to scanned prerequisites
+            scannedCourses.value.push(prerequisite); // Add to scanned prerequisites
         }
     }
     return coursePrerequisites;
@@ -74,7 +78,7 @@ function preSearch(inname, prerequisites, prerequisite_types, displayNoPrerequis
  * @param {boolean} just_or - Should only prerequisites that are marked with OR should be checked
  * @returns {boolean | [boolean, boolean]} - If just_or is true return if there was an OR and if it is satisfied, If just_or is false return if all prerequisites are met
  */
-function coursePrerequisitesMet(course, just_or = false) {
+export function coursePrerequisitesMet(course, just_or = false) {
     if (course === undefined) {
         ERep.Log("It appears that a undefined course was passed to check Pre-Req's");
         return false;
@@ -82,14 +86,12 @@ function coursePrerequisitesMet(course, just_or = false) {
     let presOrComplete = false;
     let containedOr = false;
     for (var i = 0; i < course.prerequisites.length; i++) { // Search through prerequisites
-        if (course.prerequisite_types[i] === PREREQUISITE_OR) {
+        if (course.prerequisite_types[i] === CourseData.PREREQUISITE_OR) {
             containedOr = true; // There is a OR in the prerequisites
         }
         if (
-            course.prerequisite_types[i] === PREREQUISITE_OR &&
-            takenCourses.findIndex((e) => {
-                return e.name === course.prerequisites[i];
-            }) != -1
+            course.prerequisite_types[i] === CourseData.PREREQUISITE_OR &&
+            wasTakenByName(course.prerequisites[i])
         ) { // Is one of the OR prerequisites complete? If complete break
             presOrComplete = true;
             break;
@@ -102,14 +104,10 @@ function coursePrerequisitesMet(course, just_or = false) {
         return false; // If the OR prerequisites are not satisfied prerequisites are not complete
     }
     for (var i = 0; i < course.prerequisites.length; i++) { // Go through all prerequisites
-        if (
-            takenCourses.findIndex((e) => {
-                return e.name === course.prerequisites[i];
-            }) === -1
-        ) { // If the course was not taken
-            if (presOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If OR we have another one that is satisfied
+        if (course.prerequisites[i]) { // If the course was not taken
+            if (presOrComplete && course.prerequisite_types[i] === CourseData.PREREQUISITE_OR) { // If OR we have another one that is satisfied
                 continue;
-            } else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
+            } else if (course.prerequisite_types[i] === CourseData.PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
                 continue;
             } else { // If it's not complete and it's required, the prerequisites are not complete
                 return false;
@@ -124,7 +122,7 @@ function coursePrerequisitesMet(course, just_or = false) {
  * @param {course} course - Course to test
  * @returns {[boolean, number]} - Do we need to prompt for score and for what credit type
 */
-function checkIfExamScoreRequired(course) {
+export function checkIfExamScoreRequired(course) {
     switch (course.cid) {
         case "0406":
             return [true, MATH_CREDIT]
@@ -144,14 +142,14 @@ function checkIfExamScoreRequired(course) {
  * Filter the courses based on search inputs
  * 
  * @param {course} course - The course to check and prompt for
- * @returns {void}
+ * @returns {boolean}
 */
-function FilterCourse(course) {
+export function FilterCourse(course) {
     if (course === undefined) {
         return false;
     } // If there is no course, don't search it
     let selectedCredit = document.getElementById("creditFilter").value;
-    let creditText = convertCreditToText(course.credits[0][0]);
+    let creditText = Conversion.convertCreditToText(course.credits[0][0]);
     if (selectedCredit != "Any Credit") {
         if (selectedCredit != creditText) {
             if (selectedCredit != "Music") {
@@ -163,11 +161,22 @@ function FilterCourse(course) {
     }
     var continued = false
     for (let i = 0; i < course.grade.length; i++) {
-        if (filterGrades.findIndex((e) => e === course.grade[i]) != -1) {
+        if (filterGrades.value.findIndex((e) => e === course.grade[i]) != -1) {
             continued = true
             break
         }
     } // Search all of the grades we are going to display and filter them
     if (!continued) return true
     return false;
+}
+/**
+ * Return true if the course has been taken before
+ * 
+ * @param {string} courseName - The course name to search for
+ * @returns {boolean}
+*/
+export function wasTakenByName(courseName) {
+    return Data.takenCourses.value.findIndex((element) => {
+        return element.name === courseName;
+    }) === -1
 }
