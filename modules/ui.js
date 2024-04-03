@@ -3,6 +3,8 @@ import * as Global from "./global.js"
 import * as Graphing from "./graphing.js"
 import * as Conversion from "./conversion.js"
 import * as FilterSearch from "./filterSearch.js";
+import * as Data from "./data.js";
+import * as CourseData from "./courseData.js";
 /**
  * Display a course on the screen
  * 
@@ -16,8 +18,9 @@ export function showCourse(course) {
     divs[0].innerHTML = course.cid; // Set the course ID
     let credits = ""; // HTML of credits to display
     for (var i = 0; i < course.credits.length; i++) { // For all credits
-        let creditName = Conversion.convertCreditToText(course.credits[i][0]); // Get credit name in text
-        credits += `${i === 0 ? "" : ", "}<span>${creditName === "Commencement" ? 1 : course.credits[i][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit set the number of credits to 1 (The default is 0)
+        let thisCredit = course.credits[i];
+        let creditName = Conversion.convertCreditToText(thisCredit[0]); // Get credit name in text
+        credits += `${i === 0 ? "" : ", "}<span>${creditName === "Commencement" ? 1 :thisCredit[1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit set the number of credits to 1 (The default is 0)
     }
     divs[1].innerHTML = credits; // Display credits
     let exams = ""; // HTML of exams to display
@@ -26,18 +29,14 @@ export function showCourse(course) {
     }
     divs[2].innerHTML = exams; // Display exams
     let prerequisites = ""; // HTML of prerequisites to display
-    let prerequisitesOrComplete = coursePrerequisitesMet(course, true)[1]; // Variable to track if prerequisites are complete
+    let prerequisitesOrComplete = FilterSearch.coursePrerequisitesMet(course, true)[1]; // Variable to track if prerequisites are complete
     let prerequisites_complete = true;
     for (var i = 0; i < course.prerequisites.length; i++) { // Go through all the prerequisites
         let svg = ""; // The SVG to add to the end of the prerequisite
-        if (
-            takenCourses.findIndex((e) => {
-                return e.name === course.prerequisites[i];
-            }) === -1
-        ) { // If the course is NOT complete
-            if (prerequisitesOrComplete && course.prerequisite_types[i] === PREREQUISITE_OR) { // If it's a OR and we know that there is another one, display an N/A symbol
+        if (!FilterSearch.wasTakenByName(course.prerequisites[i])) { // If the course is NOT complete
+            if (prerequisitesOrComplete && course.prerequisite_types[i] === CourseData.PREREQUISITE_OR) { // If it's a OR and we know that there is another one, display an N/A symbol
                 svg = NA_SVG;
-            } else if (course.prerequisite_types[i] === PREREQUISITE_RECOMMENDED) { // If it's a recommend course display an N/A symbol because it's not required
+            } else if (course.prerequisite_types[i] === CourseData.PREREQUISITE_RECOMMENDED) { // If it's a recommend course display an N/A symbol because it's not required
                 svg = NA_SVG;
             } else { // If it's just not done
                 svg = X_SVG;
@@ -52,7 +51,7 @@ export function showCourse(course) {
     let prerequisiteTitle = document.getElementById("pretitle"); // The element for if all the prerequisites are met
     prerequisiteTitle.innerHTML = prerequisites_complete ? "COMPLETE " + CHECKMARK_SVG : "INCOMPLETE " + X_SVG;
     prerequisiteTitle.className = prerequisites_complete ? "accepted" : "failed";
-    Global.errorHandle(GeneratePrerequisiteGraph, course);
+    Global.errorHandle(Graphing.GeneratePrerequisiteGraph, course);
 }
 /**
  * Update the search results for taken courses
@@ -61,14 +60,14 @@ export function showCourse(course) {
  */
 export function PropagateTakenCourseSearchResults() {
     document.getElementById("addcompletesugglist").innerHTML = ""; // Clear the results
-    let results = searchCourses(
+    let results = FilterSearch.searchCourses(
         document.getElementById("addcompletename").value,
         document.getElementById("addcompletecid").value
         ); // Search courses with the user's search
     if (results.length === 0) {
         if (document.getElementById("addcompletename").value === "" && document.getElementById("addcompletecid").value === "") {
             document.getElementById("addcompletesugglist").innerHTML = "<p>Start Typing...</p>"; // If the search areas are blank, ask the user to start typing
-            return
+            return;
         }
         document.getElementById("addcompletesugglist").innerHTML = "<p>No Results</p>"; // If there are no results, show that
         return;
@@ -90,9 +89,7 @@ export function PropagateTakenCourseSearchResults() {
             </div>
             <div class="tcf">
                 ${
-                    takenCourses.findIndex((e) => {
-                        return e === results[i];
-                    }) === -1
+                    FilterSearch.wasTaken(results[i])
                         ? ""
                         : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>'
                 }
@@ -104,10 +101,10 @@ export function PropagateTakenCourseSearchResults() {
         temp.innerHTML = tmp; // Set the html to what we have before
         temp.id =
             "atcid" +
-            Courses.findIndex((e) => {
+            CourseData.Courses.findIndex((e) => {
                 return e === results[i];
             }); // Set it's ID to it's course id so we can add it later
-        temp.addEventListener("click", addTakenCourse); // Make it work 
+        temp.addEventListener("click", Data.addTakenCourse); // Make it work 
         frag.appendChild(temp); // Add it to the list
     }
     document.getElementById("addcompletesugglist").appendChild(frag); // Add all the results to the HTML
@@ -119,26 +116,28 @@ export function PropagateTakenCourseSearchResults() {
  */
 export function PropagateTakenCourses() {
     document.getElementById("takenCourses").innerHTML = ""; // Clear the list of taken courses
-    if (takenCourses.length === 0) {
+    if (Data.takenCourses.value.length === 0) {
         document.getElementById("takenCourses").innerHTML = "<p>Click + to add a Course</p>"; // Show how to add a course
         return
     }
     var frag = document.createDocumentFragment(); // Create a HTML fragment that will be added
-    for (let i = 0; i < takenCourses.length; i++) { // Go through all taken courses
+    for (let i = 0; i < Data.takenCourses.value.length; i++) { // Go through all taken courses
+        let thisTakenCourse = Data.takenCourses.value[i]
         let credits = ""; // The credits for the course
-        for (var creditIndex = 0; creditIndex < takenCourses[i].credits.length; creditIndex++) { // Go through all the credits
-            let creditName = Conversion.convertCreditToText(takenCourses[i].credits[creditIndex][0]); // Get credit name in text
-            credits += `${DIVIDER_SVG} <span>${creditName === "Commencement" ? "" : takenCourses[i].credits[creditIndex][1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit don't display a number
+        for (var creditIndex = 0; creditIndex < thisTakenCourse.credits.length; creditIndex++) { // Go through all the credits
+            let thisCredit = thisTakenCourse.credits[creditIndex];
+            let creditName = Conversion.convertCreditToText(thisCredit[0]); // Get credit name in text
+            credits += `${DIVIDER_SVG} <span>${creditName === "Commencement" ? "" : thisCredit[1]} ${creditName} Credit</span>`; // Add the credit to the list, if it's a commencement credit don't display a number
         }
         let tmp = `
         <div>
-            <h5>${takenCourses[i].name}<span>${
-            coursePrerequisitesMet(takenCourses[i])
+            <h5>${thisTakenCourse.name}<span>${
+            FilterSearch.coursePrerequisitesMet(thisTakenCourse)
                 ? ""
                 : "" + WARNING_SVG + " Prerequisites Incomplete"
         }</span></h5>
             <div class="tcf">
-                <div class="cid">${takenCourses[i].cid}</div>
+                <div class="cid">${thisTakenCourse.cid}</div>
                 ${credits}
             </div>
         </div>
@@ -150,19 +149,19 @@ export function PropagateTakenCourses() {
         temp.innerHTML = tmp; // Set the html to what we have before
         temp.id =
             "tcipu" +
-            Courses.findIndex((e) => {
-                return e === takenCourses[i];
+            CourseData.Courses.findIndex((e) => {
+                return e === thisTakenCourse;
             }); // Set it's ID to it's course id so we can view it later
         temp.className = "tcf"; // Styling
         temp.addEventListener("click", (e) => {
             if (e.target.id === "trash") { // If the user clicks the trash button
                 console.log(i);
-                takenCourses.splice(i, 1); // Remove the course from taken courses
+                Data.takenCourses.value.splice(i, 1); // Remove the course from taken courses
                 PropagateTakenCourseSearchResults(); // Update UI
                 PropagateTakenCourses();
                 Graphing.PropagateCourseChart();
             } else {
-                showCourse(Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]); // Show the course if not trashing it
+                showCourse(CourseData.Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]); // Show the course if not trashing it
             }
         });
         frag.appendChild(temp); // Add it to the list of taken courses
@@ -177,7 +176,7 @@ export function PropagateTakenCourses() {
  * @returns {Promise | void} - Promise for when the score is complete
 */
 export async function promptForRegentsExamScore(cc) {
-    let checkResult = checkIfExamScoreRequired(cc) // Check if we need the score
+    let checkResult = FilterSearch.checkIfExamScoreRequired(cc) // Check if we need the score
     if (!checkResult[0]) {
         return; // If we don't need a score, don't continue
     }
@@ -198,10 +197,10 @@ export async function promptForRegentsExamScore(cc) {
     })
 }
 /**
-				 * Load event listeners that need the DOM to finish loading
-				 * 
-				 * @returns {void}
-				 */
+ * Load event listeners that need the DOM to finish loading
+ * 
+ * @returns {void}
+ */
 export function loadCall() {
     document.getElementById("addcomplete").addEventListener("click", () => { // + Button
         document.getElementById("addcompletebox").style.display = "flex"; // Unhide the search panel
@@ -298,33 +297,34 @@ export function CalculateDiploma() {
     r("rd-wlc");
     r("rd-hc");
     r("rd-cc");
-    for (let i = 0; i < takenCourses.length; i++) {
-        for (let ci = 0; ci < takenCourses[i].credits.length; ci++) {
-            let ca = takenCourses[i].credits[ci][1];
+    for (let i = 0; i < Data.takenCourses.value.length; i++) {
+        for (let ci = 0; ci < Data.takenCourses.value[i].credits.length; ci++) {
+            let thisCredit = Data.takenCourses.value[i].credits[ci];
+            let ca = thisCredit[1];
             e("rd-tc", ca);
-            switch (takenCourses[i].credits[ci][0]) {
-                case ENGLISH_CREDIT:
+            switch (thisCredit[0]) {
+                case CourseData.ENGLISH_CREDIT:
                     e("rd-ec", ca);
                     break;
-                case SOCIAL_STUDY_CREDIT:
+                case CourseData.SOCIAL_STUDY_CREDIT:
                     e("rd-ssc", ca);
                     break;
-                case MATH_CREDIT:
+                case CourseData.MATH_CREDIT:
                     e("rd-mc", ca);
                     break;
-                case SCIENCE_CREDIT:
+                case CourseData.SCIENCE_CREDIT:
                     e("rd-sc", ca);
                     break;
-                case PHYSICAL_EDUCATION_CREDIT:
+                case CourseData.PHYSICAL_EDUCATION_CREDIT:
                     e("rd-pec", ca);
                     break;
-                case WORLD_LANGUAGE_CREDIT:
+                case CourseData.WORLD_LANGUAGE_CREDIT:
                     e("rd-wlc", ca);
                     break;
-                case HEALTH_CREDIT:
+                case CourseData.HEALTH_CREDIT:
                     e("rd-hc", ca);
                     break;
-                case MEETS_COMMENCEMENT_CREDIT:
+                case CourseData.MEETS_COMMENCEMENT_CREDIT:
                     e("rd-cc", 1);
                     break;
             }

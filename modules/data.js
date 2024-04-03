@@ -1,7 +1,19 @@
 window.DATA_LOADED = true;
+import * as FilterSearch from "./filterSearch.js";
+import * as CourseData from "./courseData.js";
 import * as Global from "./global.js"
+import * as UI from "./ui.js";
+import * as Graphing from "./graphing.js";
 export const data = new Global.State({});
 export const takenCourses = new Global.State([]);
+export const GradeExamCount = new Global.State({
+    math: [],
+    science: [],
+    english: [],
+    social_studies: [],
+    additional: [],
+    world_language: [],
+});
 /**
  * Add the exam and score to the credit type
  * 
@@ -25,31 +37,26 @@ export function pushRegentsExamScore(cc, score, type) {
  * @returns {void}
 */
 export async function addTakenCourse(e) {
-    var cc = Courses[parseInt(e.currentTarget.id.split("atcid")[1])]; // Get the course index and get the course from the element ID
+    var cc = CourseData.Courses[parseInt(e.currentTarget.id.split("atcid")[1])]; // Get the course index and get the course from the element ID
     if (e.target.id === "ell") { // If the event is triggered for the info button show the course and return
-        showCourse(cc);
+        UI.showCourse(cc);
         return;
     }
-    if (
-        takenCourses.findIndex((e) => {
-            return e === cc;
-        }) === -1
-    ) { // If the course has not been taken
+    if (FilterSearch.wasTaken(cc)) { // If the course has not been taken
         var ev = e.currentTarget; // Get the event target
-        await promptForRegentsExamScore(cc); // See if we need a score
-        takenCourses.push(cc); // Add the course to taken courses
+        await UI.promptForRegentsExamScore(cc); // See if we need a score
+        takenCourses.value.push(cc); // Add the course to taken courses
         ev.lastChild.innerHTML = CHECKMARK_SVG + ev.lastChild.innerHTML; // Add a checkmark to the start of the info area
-        PropagateTakenCourses(); // Update the list of taken courses
-        PropagateCourseChart(); // Update the main graph
+        Global.errorHandle(() => {
+            UI.PropagateTakenCourses(); // Update the list of taken courses
+            Graphing.PropagateCourseChart(); // Update the main graph
+        });
     } else { // If we have taken the course
-        takenCourses.splice(
-            takenCourses.findIndex((e) => {
-                return e === cc;
-            }),
-            1
-        ); // Remove it from taken courses
+        takenCourses.value.splice(takenCourses.value.indexOf(cc), 1); // Remove it from taken courses
         e.currentTarget.lastChild.firstChild.remove(); // Remove the checkmark
-        PropagateTakenCourses(); // Update the list of taken courses
-        PropagateCourseChart(); // Update the main graph
+        Global.errorHandle(() => {
+            UI.PropagateTakenCourses(); // Update the list of taken courses
+            Graphing.PropagateCourseChart(); // Update the main graph
+        });
     }
 }

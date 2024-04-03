@@ -26,7 +26,7 @@ export function GeneratePrerequisiteGraph(course) {
     var data = [];
     try {
         FilterSearch.scannedCourses.value = [];
-        data = preSearch(course.name, course.prerequisites, course.prerequisite_types);
+        data = FilterSearch.preSearch(course.name, course.prerequisites, course.prerequisite_types);
     } catch (e2) {
         presentError(e2, e2, " - Data Parsing");
     }

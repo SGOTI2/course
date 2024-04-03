@@ -12,7 +12,7 @@ export const filterGrades = new Global.State([9,10,11,12])
  * @param {string} cid - The courseID of the course to search for
  * @returns {course} - A course object (from courseData)
  */
-function searchCourses(name = "", cid = "") {
+export function searchCourses(name = "", cid = "") {
     let foundCourses = [];
     for (let i = 0; i < CourseData.Courses.length; i++) { // Iterate through courses
         if (
@@ -179,4 +179,13 @@ export function wasTakenByName(courseName) {
     return Data.takenCourses.value.findIndex((element) => {
         return element.name === courseName;
     }) === -1
+}
+/**
+ * Return true if the course has been taken before
+ * 
+ * @param {course} course - The course name to search for
+ * @returns {boolean}
+*/
+export function wasTaken(course) {
+    return Data.takenCourses.value.indexOf(course) === -1
 }
