@@ -1,6 +1,6 @@
 window.GRAPHING_LOADED = true;
 import * as Global from "./global.js"
-import * as PlotlyDark from "./PlotlyDark.js"
+import * as PlotlyDark from "./plotlyDark.js"
 import * as FilterSearch from "./filterSearch.js"
 import * as CourseData from "./courseData.js"
 import * as Conversion from "./conversion.js";
