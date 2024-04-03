@@ -1,36 +1,38 @@
 // Color and text conversion from objects
 window.CONVERSION_LOADED = true;
-function convertCreditToText(credit) {
+import * as Global from "./global.js"
+import * as CourseData from "./courseData.js"
+export function convertCreditToText(credit) {
     let result = "Unknown";
     switch (credit) {
-        case MATH_CREDIT:
+        case CourseData.MATH_CREDIT:
             result = "Math";
             break;
-        case HEALTH_CREDIT:
+        case CourseData.HEALTH_CREDIT:
             result = "Health";
             break;
-        case ENGLISH_CREDIT:
+        case CourseData.ENGLISH_CREDIT:
             result = "English";
             break;
-        case SCIENCE_CREDIT:
+        case CourseData.SCIENCE_CREDIT:
             result = "Science";
             break;
-        case SOCIAL_STUDY_CREDIT:
+        case CourseData.SOCIAL_STUDY_CREDIT:
             result = "Social Studies";
             break;
-        case GENERAL_MUSIC_CREDIT:
+        case CourseData.GENERAL_MUSIC_CREDIT:
             result = "Music";
             break;
-        case PHYSICAL_EDUCATION_CREDIT:
+        case CourseData.PHYSICAL_EDUCATION_CREDIT:
             result = "P.E.";
             break;
-        case MUSIC_SKILLS_DEVELOPMENT_CREDIT:
+        case CourseData.MUSIC_SKILLS_DEVELOPMENT_CREDIT:
             result = "Music (S Dev.)";
             break;
-        case MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT:
+        case CourseData.MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT:
             result = "Music (K/A Dev.)";
             break;
-        case MEETS_COMMENCEMENT_CREDIT:
+        case CourseData.MEETS_COMMENCEMENT_CREDIT:
             result = "Commencement";
             break;
         default:
@@ -38,22 +40,22 @@ function convertCreditToText(credit) {
     }
     return result;
 }
-function convertExamToText(exam) {
+export function convertExamToText(exam) {
     let result = "";
     switch (exam) {
-        case LOCAL_EXAM:
+        case CourseData.LOCAL_EXAM:
             result = "Local";
             break;
-        case REGENTS_EXAM:
+        case CourseData.REGENTS_EXAM:
             result = "Regents";
             break;
-        case REGENTS_EXAM_JANUARY:
+        case CourseData.REGENTS_EXAM_JANUARY:
             result = "January Regents";
             break;
-        case AP_EXAM:
+        case CourseData.AP_EXAM:
             result = "AP";
             break;
-        case AP_EXAM_ENCOURAGED:
+        case CourseData.AP_EXAM_ENCOURAGED:
             result = "Encouraged AP";
             break;
         default:
@@ -61,16 +63,16 @@ function convertExamToText(exam) {
     }
     return result;
 }
-function convertPrerequisiteTypeToText(pretype) {
+export function convertPrerequisiteTypeToText(pretype) {
     let result = "";
     switch (pretype) {
-        case PREREQUISITE_REQUIRED:
+        case CourseData.PREREQUISITE_REQUIRED:
             result = "Required";
             break;
-        case PREREQUISITE_OR:
+        case CourseData.PREREQUISITE_OR:
             result = "Or";
             break;
-        case PREREQUISITE_RECOMMENDED:
+        case CourseData.PREREQUISITE_RECOMMENDED:
             result = "Recommended";
             break;
         default:
@@ -78,19 +80,19 @@ function convertPrerequisiteTypeToText(pretype) {
     }
     return result;
 }
-function convertPrerequisiteTypeToColor(pretype) {
+export function convertPrerequisiteTypeToColor(pretype) {
     let result = "";
     switch (pretype) {
-        case PREREQUISITE_REQUIRED:
+        case CourseData.PREREQUISITE_REQUIRED:
             result = "red";
             break;
-        case PREREQUISITE_OR:
+        case CourseData.PREREQUISITE_OR:
             result = "blue";
             break;
-        case PREREQUISITE_RECOMMENDED:
+        case CourseData.PREREQUISITE_RECOMMENDED:
             result = "yellow";
             break;
-        case PREREQUISITE_NONE:
+        case CourseData.PREREQUISITE_NONE:
             result = LIGHT_GREY;
             break;
         default:
@@ -98,22 +100,22 @@ function convertPrerequisiteTypeToColor(pretype) {
     }
     return result;
 }
-function convertPrerequisiteTypeToColorDark(pretype) {
-    if (!isDarkMode) {
+export function convertPrerequisiteTypeToColorDark(pretype) {
+    if (!Global.isDarkMode.value) {
         return convertPrerequisiteTypeToColorLight(pretype);
     }
     let result = "";
     switch (pretype) {
-        case PREREQUISITE_REQUIRED:
+        case CourseData.PREREQUISITE_REQUIRED:
             result = "#aa4444";
             break;
-        case PREREQUISITE_OR:
+        case CourseData.PREREQUISITE_OR:
             result = "#4444aa";
             break;
-        case PREREQUISITE_RECOMMENDED:
+        case CourseData.PREREQUISITE_RECOMMENDED:
             result = "#aaaa44";
             break;
-        case PREREQUISITE_NONE:
+        case CourseData.PREREQUISITE_NONE:
             result = LIGHT_GREY;
             break;
         default:
@@ -121,22 +123,22 @@ function convertPrerequisiteTypeToColorDark(pretype) {
     }
     return result;
 }
-function convertPrerequisiteTypeToColorLight(pretype) {
-    if (isDarkMode) {
+export function convertPrerequisiteTypeToColorLight(pretype) {
+    if (Global.isDarkMode.value) {
         return convertPrerequisiteTypeToColorDark(pretype);
     }
     let result = "";
     switch (pretype) {
-        case PREREQUISITE_REQUIRED:
+        case CourseData.PREREQUISITE_REQUIRED:
             result = "#ffaaaa";
             break;
-        case PREREQUISITE_OR:
+        case CourseData.PREREQUISITE_OR:
             result = "#aaaaff";
             break;
-        case PREREQUISITE_RECOMMENDED:
+        case CourseData.PREREQUISITE_RECOMMENDED:
             result = "#ffffaa";
             break;
-        case PREREQUISITE_NONE:
+        case CourseData.PREREQUISITE_NONE:
             result = LIGHT_GREY;
             break;
         default:

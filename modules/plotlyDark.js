@@ -1,6 +1,6 @@
 // Plotly Chart in Dark Mode
 window.PLOTLY_DARK_LOADED = true;
-const plotly_dark = {
+export const plotly_dark = {
     data: {
         barpolar: [
             {

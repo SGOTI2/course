@@ -1,35 +1,35 @@
 // Why is this not a JSON file? Because if you do it like this you don't need to run the directory as a server to get the data.
 window.COURSE_DATA_LOADED = true;
-const PREREQUISITE_AND = 1;
-const PREREQUISITE_REQUIRED = 1;
-const PREREQUISITE_OR = 2;
-const PREREQUISITE_RECOMMENDED = 3;
-const PREREQUISITE_NONE = 4;
+export const PREREQUISITE_AND = 1;
+export const PREREQUISITE_REQUIRED = 1;
+export const PREREQUISITE_OR = 2;
+export const PREREQUISITE_RECOMMENDED = 3;
+export const PREREQUISITE_NONE = 4;
 
-const LOCAL_EXAM = 0;
-const REGENTS_EXAM = 1;
-const AP_EXAM = 2;
-const AP_EXAM_ENCOURAGED = 3;
-const PROJECT = 4;
-const REGENTS_EXAM_JANUARY = 5;
+export const LOCAL_EXAM = 0;
+export const REGENTS_EXAM = 1;
+export const AP_EXAM = 2;
+export const AP_EXAM_ENCOURAGED = 3;
+export const PROJECT = 4;
+export const REGENTS_EXAM_JANUARY = 5;
 
-const ENGLISH_CREDIT = 0;
-const SOCIAL_STUDY_CREDIT = 1;
-const MATH_CREDIT = 2;
-const SCIENCE_CREDIT = 3;
-const HEALTH_CREDIT = 4;
+export const ENGLISH_CREDIT = 0;
+export const SOCIAL_STUDY_CREDIT = 1;
+export const MATH_CREDIT = 2;
+export const SCIENCE_CREDIT = 3;
+export const HEALTH_CREDIT = 4;
 
-const MEETS_COMMENCEMENT_CREDIT = 5;
-const MUSIC_SKILLS_DEVELOPMENT_CREDIT = 6;
-const MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT = 7;
-const GENERAL_MUSIC_CREDIT = 8;
+export const MEETS_COMMENCEMENT_CREDIT = 5;
+export const MUSIC_SKILLS_DEVELOPMENT_CREDIT = 6;
+export const MUSICAL_KNOWLEDGE_ATTITUDE_DEVELOPMENT_CREDIT = 7;
+export const GENERAL_MUSIC_CREDIT = 8;
 
-const PHYSICAL_EDUCATION_CREDIT = 9;
-const WORLD_LANGUAGE_CREDIT = 10;
+export const PHYSICAL_EDUCATION_CREDIT = 9;
+export const WORLD_LANGUAGE_CREDIT = 10;
 
-const FULL_YEAR = 0;
-const HALF_YEAR = 1;
-const Courses = [
+export const FULL_YEAR = 0;
+export const HALF_YEAR = 1;
+export const Courses = [
     {
         // MARK: ENGLISH
         name: "English 9R",

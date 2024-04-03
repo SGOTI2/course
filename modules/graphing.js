@@ -1,11 +1,16 @@
 window.GRAPHING_LOADED = true;
+import * as Global from "./global.js"
+import * as PlotlyDark from "./PlotlyDark.js"
+import * as FilterSearch from "./filterSearch.js"
+import * as CourseData from "./courseData.js"
+import * as Conversion from "./conversion.js";
 /**
  * Generate the Prerequisite graph for a course
  * 
  * @param {course} course - The course to generate the graph for
  * @returns {void}
  */
-function GeneratePrerequisiteGraph(course) {
+export function GeneratePrerequisiteGraph(course) {
     var layout = {
         font: {
             size: 10,
@@ -16,12 +21,12 @@ function GeneratePrerequisiteGraph(course) {
             r: 0,
             b: 0,
         },
-        template: isDarkMode ? plotly_dark : {},
+        template: Global.isDarkMode.value ? PlotlyDark.plotly_dark : {},
     }; // The layout and theme for the graph
     var data = [];
     try {
-        scannedCourses = [];
-        data = preSearch(course.name, course.prerequisites, course.prerequisite_types);
+        FilterSearch.scannedCourses.value = [];
+        data = FilterSearch.preSearch(course.name, course.prerequisites, course.prerequisite_types);
     } catch (e2) {
         presentError(e2, e2, " - Data Parsing");
     }
@@ -37,26 +42,23 @@ function GeneratePrerequisiteGraph(course) {
         }); // The index of the label (part) if it was already generated
         let greyify = false;
         if (inID === -1) { // If the label (part) was not generated, generate it
-            let taken =
-                takenCourses.findIndex((e) => {
-                    return e.name === data[i][0];
-                }) === -1; // Was the course taken before?
+            let taken = FilterSearch.wasTakenByName(data[i][0]); // Was the course taken before?
             label.push(taken ? data[i][0] : data[i][0] + " &#10003;"); // If taken label it with a checkmark and add it to labels
-            let or_check = coursePrerequisitesMet(
-                Courses[
-                    Courses.findIndex((e) => {
+            let or_check = FilterSearch.coursePrerequisitesMet(
+                CourseData.Courses[
+                    CourseData.Courses.findIndex((e) => {
                         return e.name === data[i][1] || e.name === data[i][1] + " &#10003;";
                     })
                 ], // The root course that this prerequisite is required for
                 true
             ); // Is there a OR part in the prerequisites for the root course?
-            if (or_check[0] && data[i][2] === PREREQUISITE_OR && or_check[1]) { // If there is a OR prerequisite and the current prerequisite is part of it
+            if (or_check[0] && data[i][2] === CourseData.PREREQUISITE_OR && or_check[1]) { // If there is a OR prerequisite and the current prerequisite is part of it
                 color.push(taken ? LIGHT_GREY : LIGHT_GREEN); // Make the label green if it's taken and grey if it's not
                 if (taken) {
                     greyify = true; // Make the link grey
                 }
             } else {
-                color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the prerequisite is not part of a OR set it's color accordingly
+                color.push(taken ? Conversion.convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the prerequisite is not part of a OR set it's color accordingly
             }
             inID = label.length - 1; // The label is now generated and is at the end of the label array
         }
@@ -64,26 +66,19 @@ function GeneratePrerequisiteGraph(course) {
             return e === data[i][1] || e === data[i][1] + " &#10003;";
         }); // The index of the label (part) if it was already generated
         if (outID === -1) { // If the label (part) was not generated, generate it
-            let taken =
-                takenCourses.findIndex((e) => {
-                    return e.name === data[i][1];
-                }) === -1; // Was the course taken before?
+            let taken = FilterSearch.wasTakenByName(data[i][1]) // Was the course taken before?
             label.push(taken ? data[i][1] : data[i][1] + " &#10003;"); // If taken label it with a checkmark and add it to labels
-            color.push(taken ? convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the course is complete color the label gray, if not color it the way it should be
+            color.push(taken ? Conversion.convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the course is complete color the label gray, if not color it the way it should be
             outID = label.length - 1; // The label is now generated and is at the end of the label array
         }
         source.push(inID); // Create a link from the root course
         target.push(outID); // To the prerequisite
         let lnc = ""; // Link color
-        if (
-            takenCourses.findIndex((e) => {
-                return e.name === data[i][0];
-            }) === -1
-        ) { // If not taken
+        if (FilterSearch.wasTakenByName(data[i][0])) { // If not taken
             if (greyify) {
                 lnc = LIGHT_GREY; // If prerequisite is handled by another color it grey, (only for OR)
             } else {
-                lnc = convertPrerequisiteTypeToColorLight(data[i][2]); // Color it accordingly
+                lnc = Conversion.convertPrerequisiteTypeToColorLight(data[i][2]); // Color it accordingly
             }
         } else {
             lnc = LIGHT_GREEN; // We have met the prerequisite, color the link green
@@ -126,7 +121,7 @@ function GeneratePrerequisiteGraph(course) {
  * 
  * @returns {void}
 */
-function PropagateCourseChart() {
+export function PropagateCourseChart() {
     var layout = {
         font: {
             size: 10,
@@ -137,17 +132,17 @@ function PropagateCourseChart() {
             r: 10,
             b: 10,
         },
-        template: isDarkMode ? plotly_dark : {},
+        template: Global.isDarkMode.value ? PlotlyDark.plotly_dark : {},
     };
     var appendData = [];
     try {
-        scannedCourses = [];
-        for (let i = 0; i < Courses.length; i++) {
+        FilterSearch.scannedCourses.value = [];
+        for (let i = 0; i < CourseData.Courses.length; i++) {
             appendData.push(
-                ...preSearch(
-                    Courses[i].name,
-                    Courses[i].prerequisites,
-                    Courses[i].prerequisite_types,
+                ...FilterSearch.preSearch(
+                    CourseData.Courses[i].name,
+                    CourseData.Courses[i].prerequisites,
+                    CourseData.Courses[i].prerequisite_types,
                     true
                 )
             );
@@ -165,27 +160,24 @@ function PropagateCourseChart() {
         var inID = label.findIndex((e) => {
             return e === appendData[i][0] || e === appendData[i][0] + " &#10003;";
         });
-        let inCourseID = Courses.findIndex((e) => {
+        let inCourseID = CourseData.Courses.findIndex((e) => {
             return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
         });
-        if (FilterCourse(Courses[inCourseID])) {
+        if (FilterSearch.FilterCourse(CourseData.Courses[inCourseID])) {
             continue;
         }
         let greyify = false;
         if (inID === -1) {
-            let taken =
-                takenCourses.findIndex((e) => {
-                    return e.name === appendData[i][0];
-                }) === -1;
+            let taken = FilterSearch.wasTakenByName(appendData[i][0]);
             label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
-            let or_check = coursePrerequisitesMet(Courses[inCourseID], true);
-            if (or_check[0] && appendData[i][2] === PREREQUISITE_OR && or_check[1]) {
+            let or_check = FilterSearch.coursePrerequisitesMet(CourseData.Courses[inCourseID], true);
+            if (or_check[0] && appendData[i][2] === CourseData.PREREQUISITE_OR && or_check[1]) {
                 color.push(taken ? LIGHT_GREY : LIGHT_GREEN);
                 if (taken) {
                     greyify = true;
                 }
             } else {
-                color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+                color.push(taken ? Conversion.convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
             }
             inID = label.length - 1;
         }
@@ -193,26 +185,19 @@ function PropagateCourseChart() {
             return e === appendData[i][1] || e === appendData[i][1] + " &#10003;";
         });
         if (outID === -1) {
-            let taken =
-                takenCourses.findIndex((e) => {
-                    return e.name === appendData[i][1];
-                }) === -1;
+            let taken = FilterSearch.wasTakenByName(appendData[i][1]);
             label.push(taken ? appendData[i][1] : appendData[i][1] + " &#10003;");
-            color.push(taken ? convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
+            color.push(taken ? Conversion.convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
             outID = label.length - 1;
         }
         source.push(inID);
         target.push(outID);
         let lnc = "";
-        if (
-            takenCourses.findIndex((e) => {
-                return e.name === appendData[i][0];
-            }) === -1
-        ) {
+        if (FilterSearch.wasTakenByName(appendData[i][0])) {
             if (greyify) {
                 lnc = LIGHT_GREY;
             } else {
-                lnc = convertPrerequisiteTypeToColorLight(appendData[i][2]);
+                lnc = Conversion.convertPrerequisiteTypeToColorLight(appendData[i][2]);
             }
         } else {
             lnc = LIGHT_GREEN;
