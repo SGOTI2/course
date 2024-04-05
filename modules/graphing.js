@@ -22,6 +22,8 @@ export function GeneratePrerequisiteGraph(course) {
             b: 0,
         },
         template: Global.isDarkMode.value ? PlotlyDark.plotly_dark : {},
+		showlegend: true,
+		legend: {"orientation": "h"}
     }; // The layout and theme for the graph
     var data = [];
     try {
@@ -110,7 +112,7 @@ export function GeneratePrerequisiteGraph(course) {
         hoverinfo: false,
     }; // The data that we are adding in a format that Plotly can understand
     var dataObj = [dataObj]; // Put it in a array so Plotly can use it
-    Plotly.react("preflow", dataObj, layout, {
+    Plotly.react("courseInfoPrerequisitesFlowChart", dataObj, layout, {
         scrollZoom: true,
         responsive: true,
         modebar_add: ["zoom", "pan"],

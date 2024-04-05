@@ -80,7 +80,7 @@ export function preSearch(inname, prerequisites, prerequisite_types, displayNoPr
  */
 export function coursePrerequisitesMet(course, just_or = false) {
     if (course === undefined) {
-        ERep.Log("It appears that a undefined course was passed to check Pre-Req's");
+        console.error("Undefined course in prerequisites met")
         return false;
     }
     let presOrComplete = false;
@@ -91,7 +91,7 @@ export function coursePrerequisitesMet(course, just_or = false) {
         }
         if (
             course.prerequisite_types[i] === CourseData.PREREQUISITE_OR &&
-            wasTakenByName(course.prerequisites[i])
+            !wasTakenByName(course.prerequisites[i])
         ) { // Is one of the OR prerequisites complete? If complete break
             presOrComplete = true;
             break;
@@ -104,7 +104,7 @@ export function coursePrerequisitesMet(course, just_or = false) {
         return false; // If the OR prerequisites are not satisfied prerequisites are not complete
     }
     for (var i = 0; i < course.prerequisites.length; i++) { // Go through all prerequisites
-        if (course.prerequisites[i]) { // If the course was not taken
+        if (wasTakenByName(course.prerequisites[i])) { // If the course was not taken
             if (presOrComplete && course.prerequisite_types[i] === CourseData.PREREQUISITE_OR) { // If OR we have another one that is satisfied
                 continue;
             } else if (course.prerequisite_types[i] === CourseData.PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
@@ -125,15 +125,15 @@ export function coursePrerequisitesMet(course, just_or = false) {
 export function checkIfExamScoreRequired(course) {
     switch (course.cid) {
         case "0406":
-            return [true, MATH_CREDIT]
+            return [true, CourseData.MATH_CREDIT]
         case "0411":
-            return [true, MATH_CREDIT]
+            return [true, CourseData.MATH_CREDIT]
         case "0442":
-            return [true, MATH_CREDIT]
+            return [true, CourseData.MATH_CREDIT]
         case "0440":
-            return [true, MATH_CREDIT]
+            return [true, CourseData.MATH_CREDIT]
         case "0443":
-            return [true, MATH_CREDIT]
+            return [true, CourseData.MATH_CREDIT]
         default:
             return [false, 0] // It does not match a course we need a grade for
     }
@@ -188,4 +188,11 @@ export function wasTakenByName(courseName) {
 */
 export function wasTaken(course) {
     return Data.takenCourses.value.indexOf(course) === -1
+}
+export function fetchAvailableCourses() {
+    var availableCourses = CourseData.Courses;
+    availableCourses = availableCourses.filter((value) => {
+        return coursePrerequisitesMet(value);
+    })
+    return availableCourses;
 }

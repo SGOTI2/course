@@ -32,7 +32,7 @@ class NotFound extends Error {
 }
 try {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.setAttribute("data-theme", "dark");
+        document.documentElement.setAttribute("data-bs-theme", "dark");
         Global.isDarkMode.value = true;
     }
     // Generate Build ID

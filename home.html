@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Course Selection 2025 | Home</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+        <script type="text/javascript">
+			const TAKEN =
+				'<div class="badge text-bg-success">Taken</div>';
+			const CHECKMARK_SVG =
+				'<i class="bi bi-check-circle-fill text-success"></i>'; // :( It's not a svg anymore
+			const NA_SVG =
+				'<i class="bi bi-dash-circle-fill text-secondary"></i>';
+			const X_SVG =
+				'<i class="bi bi-x-circle-fill text-danger"></i>';
+			const DIVIDER_SVG =
+				'<svg preserveAspectRatio="none" width="4" height="4" class="div" fill="currentColor" viewBox="0 0 4 4"></svg>';
+			const WARNING_SVG =
+				'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>';
+			const LIGHT_GREEN = "#77ff7733";
+			const LIGHT_GREY = "#aaaaaa33";
+		</script>
+		<script src="./modules/plotly.js"></script>
+		<script src="./modules/erep.js"></script>
+		<script type="module" src="modules/main.js"></script>
+        <style>
+            div#courseInfoLegend div::before {
+                display: inline-block;
+                background-color: var(--color);
+                width: 10px;
+                height: 10px;
+                margin-right: 5px;
+                border-radius: 25%;
+                content: '';
+            }
+            .bi::before, [class*=" bi-"]::before, [class^=bi-]::before {
+                vertical-align: -0.25rem;
+            }
+        </style>
+    </head>
+    <body>
+        <ul class="nav nav-pills m-3 fade hide" id="tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="home-tab" data-bs-toggle="pill" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Home</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="taken-tab" data-bs-toggle="pill" data-bs-target="#taken-tab-pane" type="button" role="tab" aria-controls="taken-tab-pane" aria-selected="false">Taken</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="available-tab" data-bs-toggle="pill" data-bs-target="#available-tab-pane" type="button" role="tab" aria-controls="available-tab-pane" aria-selected="false">Available</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="selection-tab" data-bs-toggle="pill" data-bs-target="#selection-tab-pane" type="button" role="tab" aria-controls="selection-tab-pane" aria-selected="false">Selection</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="tabContent">
+            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+                <div class="position-absolute top-50 start-50 translate-middle">
+                    <h1>2025 Course selection</h1>
+                    <p>Select your courses for 2025</p>
+                    <button class="btn btn-primary" id="getStarted">Get started</button>
+                </div>
+            </div>
+            <div class="tab-pane fade hide p-4 pt-0" id="taken-tab-pane" role="tabpanel" aria-labelledby="taken-tab" tabindex="0">
+                <p class="m-0">Step #1</p>
+                <h2>Add courses you have taken</h2>
+                <div class="d-flex gap-3 pt-1">
+                    <button class="btn btn-primary" id="takenAddButton" data-bs-toggle="offcanvas" data-bs-target="#addCourse" aria-controls="addCourse">Add</button>
+                    <button class="btn btn-disabled" id="takenViewButton"  data-bs-toggle="offcanvas" data-bs-target="#courseInfo" aria-controls="courseInfo" disabled>View</button>
+                    <button class="btn btn-disabled" id="takenRemoveButton" disabled>Remove</button>
+                </div>
+                <ul class="list-group pt-3" id="takenCourses"></ul>
+            </div>
+            <div class="tab-pane fade hide p-4 pt-0" id="available-tab-pane" role="tabpanel" aria-labelledby="taken-tab" tabindex="0">
+                <p class="m-0">Step #2</p>
+                <h2>See what courses you can take</h2>
+                <div class="mb-3 form-inline d-flex gap-2">
+                    <input type="search" class="form-control" id="availableCourseNameSearch" placeholder="Search" aria-label="Search">
+                    <button type="submit" class="btn btn-success">Search</button>
+                </div>
+                <ul class="list-group pt-3" id="availableCourses"></ul>
+            </div>
+        </div>
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="addCourse" aria-labelledby="addCourseLabel">
+            <div class="offcanvas-header">
+              <h5 class="offcanvas-title" id="addCourseLabel">Add Course</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="mb-3 form-floating">
+                    <input type="search" class="form-control" id="addCourseNameSearch" placeholder="Ex. Algebra I">
+                    <label for="addCourseNameSearch">Course Name</label>
+                    <div id="addCourseNameSearchHelp" class="form-text">Start typing to see courses.</div>
+                </div>
+                <ul class="list-group pt-3" id="addCourseSearchResults"></ul>
+            </div>
+        </div>
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="courseInfo" aria-labelledby="courseInfoLabel">
+            <div class="offcanvas-header">
+              <h5 class="offcanvas-title" id="courseInfoLabel"><small id="courseInfoLabelCID"></small>Course Name</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body pt-0">
+                <div class="form-floating">
+                    <input type="text" readonly class="form-control-plaintext" id="courseInfoCredits" value="">
+                    <label for="courseInfoCredits">Credits:</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" readonly class="form-control-plaintext" id="courseInfoExams" value="">
+                    <label for="courseInfoExams">Exams:</label>
+                </div>
+                <div class="form-floating">
+                    <div class="form-control-plaintext" id="courseInfoPrerequisiteStatus">Incomplete</div>
+                    <label for="courseInfoPrerequisiteStatus">Prerequisite Overall Status</label>
+                </div>
+                <div class="form-floating">
+                    <ul class="form-control-plaintext list-unstyled" id="courseInfoPrerequisites" style="height: inherit;"></ul>
+                    <label for="courseInfoPrerequisites">Prerequisite Individual Status</label>
+                </div>
+                <div class="ps-2 pe-2">
+                    <div id="courseInfoPrerequisitesFlowChart"></div>
+                    <div class="d-flex gap-2 flex-wrap" id="courseInfoLegend">
+                        <div style="--color:#77ff77;">Complete</div>
+                        <div style="--color:#cccccc;">NA</div>
+                        <div style="--color:red;">Required</div>
+                        <div style="--color:blue;">Either</div>
+                        <div style="--color:yellow;">Recommended</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="takenDoubleCheck" class="toast align-items-center position-fixed bottom-0 end-0 m-3" role="alert" aria-live="polite" aria-atomic="true" data-bs-autohide="false">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Make sure you've selected all the courses you've taken before continuing.
+                    <hr>
+                    You've selected 0.
+                </div>
+                <button type="button" class="btn-close me-2 mt-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        <div id="errorbox" style="display: none">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="64"
+				height="64"
+				fill="currentColor"
+				class="bi bi-exclamation-triangle-fill"
+				viewBox="0 0 16 16"
+			>
+				<path
+					d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"
+					fill="#ff0000"
+				/>
+			</svg>
+			<h4>Error<span id="errortype"></span></h4>
+			<p id="errormessage"></p>
+		</div>
+    </body>
+</html>

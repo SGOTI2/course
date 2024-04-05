@@ -46,17 +46,17 @@ export async function addTakenCourse(e) {
         var ev = e.currentTarget; // Get the event target
         await UI.promptForRegentsExamScore(cc); // See if we need a score
         takenCourses.value.push(cc); // Add the course to taken courses
-        ev.lastChild.innerHTML = CHECKMARK_SVG + ev.lastChild.innerHTML; // Add a checkmark to the start of the info area
+        ev.firstChild.innerHTML = ev.firstChild.innerHTML + TAKEN; // Add a checkmark to the start of the info area
         Global.errorHandle(() => {
             UI.PropagateTakenCourses(); // Update the list of taken courses
-            Graphing.PropagateCourseChart(); // Update the main graph
+            //Graphing.PropagateCourseChart(); // Update the main graph
         });
     } else { // If we have taken the course
         takenCourses.value.splice(takenCourses.value.indexOf(cc), 1); // Remove it from taken courses
-        e.currentTarget.lastChild.firstChild.remove(); // Remove the checkmark
+        e.currentTarget.firstChild.lastChild.remove(); // Remove the checkmark
         Global.errorHandle(() => {
             UI.PropagateTakenCourses(); // Update the list of taken courses
-            Graphing.PropagateCourseChart(); // Update the main graph
+            //Graphing.PropagateCourseChart(); // Update the main graph
         });
     }
 }
