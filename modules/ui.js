@@ -33,7 +33,7 @@ export function showCourse(course) {
     let prerequisites_complete = true;
     for (var i = 0; i < course.prerequisites.length; i++) { // Go through all the prerequisites
         let svg = ""; // The SVG to add to the end of the prerequisite
-        if (FilterSearch.wasTakenByName(course.prerequisites[i])) { // If the course is NOT complete
+        if (FilterSearch.wasNotTakenByName(course.prerequisites[i])) { // If the course is NOT complete
             if (prerequisitesOrComplete && course.prerequisite_types[i] === CourseData.PREREQUISITE_OR) { // If it's a OR and we know that there is another one, display an N/A symbol
                 svg = NA_SVG;
             } else if (course.prerequisite_types[i] === CourseData.PREREQUISITE_RECOMMENDED) { // If it's a recommend course display an N/A symbol because it's not required
@@ -83,7 +83,7 @@ export function PropagateTakenCourseSearchResults() {
         }
         let tmp = `<div class="d-flex justify-content-between align-items-center">
                 <div class="fw-bold">${thisResult.name}</div>
-                ${!FilterSearch.wasTaken(thisResult) ? TAKEN : ``}
+                ${!FilterSearch.wasNotTaken(thisResult) ? TAKEN : ``}
             </div>
             <small class="d-flex gap-2">${thisResult.cid}</div><span class="text-body-secondary d-flex gap-2">${credits}</small>`
         let temp = document.createElement("a"); // The element that we are making

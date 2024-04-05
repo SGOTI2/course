@@ -91,7 +91,7 @@ export function coursePrerequisitesMet(course, just_or = false) {
         }
         if (
             course.prerequisite_types[i] === CourseData.PREREQUISITE_OR &&
-            !wasTakenByName(course.prerequisites[i])
+            !wasNotTakenByName(course.prerequisites[i])
         ) { // Is one of the OR prerequisites complete? If complete break
             presOrComplete = true;
             break;
@@ -104,7 +104,7 @@ export function coursePrerequisitesMet(course, just_or = false) {
         return false; // If the OR prerequisites are not satisfied prerequisites are not complete
     }
     for (var i = 0; i < course.prerequisites.length; i++) { // Go through all prerequisites
-        if (wasTakenByName(course.prerequisites[i])) { // If the course was not taken
+        if (wasNotTakenByName(course.prerequisites[i])) { // If the course was not taken
             if (presOrComplete && course.prerequisite_types[i] === CourseData.PREREQUISITE_OR) { // If OR we have another one that is satisfied
                 continue;
             } else if (course.prerequisite_types[i] === CourseData.PREREQUISITE_RECOMMENDED) { // If it's only recommended it's not required to complete
@@ -175,7 +175,7 @@ export function FilterCourse(course) {
  * @param {string} courseName - The course name to search for
  * @returns {boolean}
 */
-export function wasTakenByName(courseName) {
+export function wasNotTakenByName(courseName) {
     return Data.takenCourses.value.findIndex((element) => {
         return element.name === courseName;
     }) === -1
@@ -186,13 +186,19 @@ export function wasTakenByName(courseName) {
  * @param {course} course - The course name to search for
  * @returns {boolean}
 */
-export function wasTaken(course) {
+export function wasNotTaken(course) {
     return Data.takenCourses.value.indexOf(course) === -1
 }
 export function fetchAvailableCourses() {
     var availableCourses = CourseData.Courses;
     availableCourses = availableCourses.filter((value) => {
-        return coursePrerequisitesMet(value);
-    })
+        if (!coursePrerequisitesMet(value)) {
+            return false;
+        }
+        if (!wasNotTaken(value)) {
+            return false;
+        }
+        return true;
+    });
     return availableCourses;
 }

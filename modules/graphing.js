@@ -44,7 +44,7 @@ export function GeneratePrerequisiteGraph(course) {
         }); // The index of the label (part) if it was already generated
         let greyify = false;
         if (inID === -1) { // If the label (part) was not generated, generate it
-            let taken = FilterSearch.wasTakenByName(data[i][0]); // Was the course taken before?
+            let taken = FilterSearch.wasNotTakenByName(data[i][0]); // Was the course taken before?
             label.push(taken ? data[i][0] : data[i][0] + " &#10003;"); // If taken label it with a checkmark and add it to labels
             let or_check = FilterSearch.coursePrerequisitesMet(
                 CourseData.Courses[
@@ -68,7 +68,7 @@ export function GeneratePrerequisiteGraph(course) {
             return e === data[i][1] || e === data[i][1] + " &#10003;";
         }); // The index of the label (part) if it was already generated
         if (outID === -1) { // If the label (part) was not generated, generate it
-            let taken = FilterSearch.wasTakenByName(data[i][1]) // Was the course taken before?
+            let taken = FilterSearch.wasNotTakenByName(data[i][1]) // Was the course taken before?
             label.push(taken ? data[i][1] : data[i][1] + " &#10003;"); // If taken label it with a checkmark and add it to labels
             color.push(taken ? Conversion.convertPrerequisiteTypeToColor(data[i][2]) : LIGHT_GREEN); // If the course is complete color the label gray, if not color it the way it should be
             outID = label.length - 1; // The label is now generated and is at the end of the label array
@@ -76,7 +76,7 @@ export function GeneratePrerequisiteGraph(course) {
         source.push(inID); // Create a link from the root course
         target.push(outID); // To the prerequisite
         let lnc = ""; // Link color
-        if (FilterSearch.wasTakenByName(data[i][0])) { // If not taken
+        if (FilterSearch.wasNotTakenByName(data[i][0])) { // If not taken
             if (greyify) {
                 lnc = LIGHT_GREY; // If prerequisite is handled by another color it grey, (only for OR)
             } else {
@@ -170,7 +170,7 @@ export function PropagateCourseChart() {
         }
         let greyify = false;
         if (inID === -1) {
-            let taken = FilterSearch.wasTakenByName(appendData[i][0]);
+            let taken = FilterSearch.wasNotTakenByName(appendData[i][0]);
             label.push(taken ? appendData[i][0] : appendData[i][0] + " &#10003;");
             let or_check = FilterSearch.coursePrerequisitesMet(CourseData.Courses[inCourseID], true);
             if (or_check[0] && appendData[i][2] === CourseData.PREREQUISITE_OR && or_check[1]) {
@@ -187,7 +187,7 @@ export function PropagateCourseChart() {
             return e === appendData[i][1] || e === appendData[i][1] + " &#10003;";
         });
         if (outID === -1) {
-            let taken = FilterSearch.wasTakenByName(appendData[i][1]);
+            let taken = FilterSearch.wasNotTakenByName(appendData[i][1]);
             label.push(taken ? appendData[i][1] : appendData[i][1] + " &#10003;");
             color.push(taken ? Conversion.convertPrerequisiteTypeToColor(appendData[i][2]) : LIGHT_GREEN);
             outID = label.length - 1;
@@ -195,7 +195,7 @@ export function PropagateCourseChart() {
         source.push(inID);
         target.push(outID);
         let lnc = "";
-        if (FilterSearch.wasTakenByName(appendData[i][0])) {
+        if (FilterSearch.wasNotTakenByName(appendData[i][0])) {
             if (greyify) {
                 lnc = LIGHT_GREY;
             } else {

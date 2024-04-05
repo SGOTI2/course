@@ -42,7 +42,7 @@ export async function addTakenCourse(e) {
         UI.showCourse(cc);
         return;
     }
-    if (FilterSearch.wasTaken(cc)) { // If the course has not been taken
+    if (FilterSearch.wasNotTaken(cc)) { // If the course has not been taken
         var ev = e.currentTarget; // Get the event target
         await UI.promptForRegentsExamScore(cc); // See if we need a score
         takenCourses.value.push(cc); // Add the course to taken courses
