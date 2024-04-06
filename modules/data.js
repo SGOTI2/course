@@ -6,6 +6,7 @@ import * as UI from "./ui.js";
 import * as Graphing from "./graphing.js";
 export const data = new Global.State({});
 export const takenCourses = new Global.State([]);
+export const starredCourses = new Global.State([]);
 export const GradeExamCount = new Global.State({
     math: [],
     science: [],
@@ -37,6 +38,7 @@ export function pushRegentsExamScore(cc, score, type) {
  * @returns {void}
 */
 export async function addTakenCourse(e) {
+    e.preventDefault();
     var cc = CourseData.Courses[parseInt(e.currentTarget.id.split("atcid")[1])]; // Get the course index and get the course from the element ID
     if (e.target.id === "ell") { // If the event is triggered for the info button show the course and return
         UI.showCourse(cc);

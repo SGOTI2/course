@@ -11,6 +11,13 @@ import * as Conversion from "./conversion.js";
  * @returns {void}
  */
 export function GeneratePrerequisiteGraph(course) {
+    if (course.prerequisites.length === 0) {
+        document.querySelector("div#courseInfoPrerequisitesFlowChart").innerHTML = `<div class="bg-secondary-subtle border border-secondary-subtle rounded"><span class="position-absolute top-50 start-50 translate-middle text-secondary">Chart Not Available</span></div>`
+        document.querySelector("div#courseInfoPrerequisitesFlowChart").classList.remove("js-plotly-plot")
+        return;
+    } else {
+        document.querySelector("div#courseInfoPrerequisitesFlowChart").innerHTML = ""
+    }
     var layout = {
         font: {
             size: 10,

@@ -27,6 +27,9 @@ export function showCourse(course) {
     for (var i = 0; i < course.exams.length; i++) { // For all exams
         exams += `${i === 0 ? "" : ", "}${Conversion.convertExamToText(course.exams[i])} Exam`; // Add the exam to the list
     }
+    if (course.exams.length === 0) {
+        exams = "No Exams"
+    }
     document.querySelector('input#courseInfoExams').value = exams; // Display exams
     let prerequisites = ""; // HTML of prerequisites to display
     let prerequisitesOrComplete = FilterSearch.coursePrerequisitesMet(course, true)[1]; // Variable to track if prerequisites are complete
@@ -98,7 +101,7 @@ export function PropagateTakenCourseSearchResults() {
     }
     document.querySelector("ul#addCourseSearchResults").appendChild(frag); // Add all the results to the HTML
 }
-function generateCourseFragment(thisTakenCourse, clickHandle) {
+function generateCourseFragment(thisTakenCourse, extras, clickHandle) {
     let credits = ""; // The credits for the course
     for (var creditIndex = 0; creditIndex < thisTakenCourse.credits.length; creditIndex++) { // Go through all the credits
         let thisCredit = thisTakenCourse.credits[creditIndex];
@@ -108,7 +111,7 @@ function generateCourseFragment(thisTakenCourse, clickHandle) {
     let tmp = `
         <div class="d-flex justify-content-between align-items-center">
             <div class="fw-bold">${thisTakenCourse.name}</div>
-            ${!FilterSearch.coursePrerequisitesMet(thisTakenCourse) ? `<span class="badge text-bg-danger rounded-pill">Prerequisite Warning</span>` : ``}
+            ${extras()}
         </div>
         <small class="d-flex gap-2">${thisTakenCourse.cid}</div><span class="text-body-secondary d-flex gap-2">${credits}</small>`
     let temp = document.createElement("a"); // The element that we are making
@@ -118,8 +121,8 @@ function generateCourseFragment(thisTakenCourse, clickHandle) {
         "tcipu" +
         CourseData.Courses.indexOf(thisTakenCourse) // Set it's ID to it's course id so we can view it later
     temp.innerHTML = tmp; // Set the html to what we have before
-    temp.setAttribute("role", "button")
-    temp.setAttribute("aria-selected", "false")
+    temp.setAttribute("role", "button");
+    temp.setAttribute("aria-selected", "false");
     temp.addEventListener("click", clickHandle);
     return temp;
 }
@@ -132,13 +135,16 @@ export function PropagateTakenCourses() {
     document.getElementById("takenCourses").innerHTML = ""; // Clear the list of taken courses
     if (Data.takenCourses.value.length === 0) {
         document.getElementById("takenCourses").innerHTML = '<small>Click "Add" to add a course</small>'; // Show how to add a course
-        propagateAvailableCourses();
+        PropagateAvailableCourses();
         return
     }
     var frag = document.createDocumentFragment(); // Create a HTML fragment that will be added
     for (let i = 0; i < Data.takenCourses.value.length; i++) { // Go through all taken courses
         let thisTakenCourse = Data.takenCourses.value[i]
-        frag.appendChild(generateCourseFragment(thisTakenCourse, (e) => {
+        frag.appendChild(generateCourseFragment(thisTakenCourse, () => {
+            return !FilterSearch.coursePrerequisitesMet(thisTakenCourse) ? `<span class="badge text-bg-danger rounded-pill">Prerequisite Warning</span>` : ``
+        }, (e) => {
+            e.preventDefault();
             let hasPrimary = e.currentTarget.classList.contains("active")
             e.currentTarget.parentElement.childNodes.forEach((element, index, array) => {
                 element.classList.remove("active") // Clear all existing active elements
@@ -165,7 +171,7 @@ export function PropagateTakenCourses() {
 
 
                 viewButton.classList.remove("btn-disabled")
-                viewButton.classList.add("btn-secondary")
+                viewButton.classList.add("btn-info")
                 viewButton.removeAttribute("disabled")
 
                 removeButton.classList.remove("btn-disabled")
@@ -178,22 +184,48 @@ export function PropagateTakenCourses() {
         }));
     }
     document.getElementById("takenCourses").appendChild(frag); // Show the new HTML
-    propagateAvailableCourses();
+    PropagateAvailableCourses();
     // CalculateDiploma();
 }
 
-export function propagateAvailableCourses() {
+export function PropagateAvailableCourses() {
     document.getElementById("availableCourses").innerHTML = ""; // Clear the list of taken courses
-    const availableCourses = FilterSearch.fetchAvailableCourses();
+    const availableCourses = FilterSearch.filterAvailableCourses(document.querySelector("input#availableCourseNameSearch").value, "", FilterSearch.fetchAvailableCourses());
     var frag = document.createDocumentFragment(); // Create a HTML fragment that will be added
     for (let i = 0; i < availableCourses.length; i++) { // Go through all taken courses
         let thisCourse = availableCourses[i];
-        frag.appendChild(generateCourseFragment(thisCourse, (e) => {
-
+        frag.appendChild(generateCourseFragment(thisCourse, () => {
+            return FilterSearch.isStarred(thisCourse) ? `<i class="bi bi-star-fill text-warning"></i>` : ``
+        }, (e) => {
+            e.preventDefault();
+            var cc = CourseData.Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]; // Get the course index and get the course from the element ID
+            if (FilterSearch.isStarred(cc)) {
+                Data.starredCourses.value.splice(Data.starredCourses.value.indexOf(cc), 1);
+            } else {
+                Data.starredCourses.value.push(cc);
+            }
+            PropagateAvailableCourses();
         }));
     }
     document.getElementById("availableCourses").appendChild(frag);
 }
+
+export function AvailableCoursesSubjectsCallback(e) {
+    const hadPrimary = e.currentTarget.classList.contains("active")
+    document.querySelectorAll("ul#subjectsDropdown > li > button").forEach((element) => {
+        element.classList.remove("active") // Clear all existing active elements
+        element.setAttribute("aria-current", "false")
+    })
+    if (!hadPrimary) {
+        e.currentTarget.classList.add("active")
+        e.currentTarget.setAttribute("aria-current", "true")
+    } else {
+        const anyElement = document.querySelector("ul#subjectsDropdown > li > button#subjectsDropdownAny")
+        anyElement.classList.add("active")
+        anyElement.setAttribute("aria-current", "true")
+    }
+}
+
 /**
  * Check and prompt if needed for a regents exam score
  * 
@@ -281,7 +313,7 @@ export function loadCall() {
         }
     })
 
-    document.getElementById('courseInfo').addEventListener('show.bs.offcanvas', () => {
+    document.querySelector('div#courseInfo').addEventListener('show.bs.offcanvas', () => {
         if (Data.takenCourses.value[takenCoursesSelectedIndex.value] !== -1) {
             showCourse(Data.takenCourses.value[takenCoursesSelectedIndex.value])
         } else {
@@ -289,8 +321,12 @@ export function loadCall() {
         }
     })
 
-    document.getElementById('courseInfo').addEventListener('hide.bs.offcanvas', () => {
+    document.querySelector("input#availableCourseNameSearch").addEventListener('keyup', () => {
+        Global.errorHandle(PropagateAvailableCourses);
+    })
 
+    document.querySelectorAll("ul#subjectsDropdown > li > button").forEach((element) => {
+        element.addEventListener("click", AvailableCoursesSubjectsCallback)
     })
 
     PropagateTakenCourses();

@@ -10,17 +10,55 @@ export const filterGrades = new Global.State([9,10,11,12])
  * Either name, cid, or both can be passed to find a course
  * @param {string} name - The name of the course to search for
  * @param {string} cid - The courseID of the course to search for
- * @returns {course} - A course object (from courseData)
+ * @param {[course]} dataSet - The data set to search through (CourseData.Courses default)
+ * @param {boolean} forUI - If the search is for the UI or not, if not it will not sort the results or allow empty searches (default true)
+ * @returns {[course]} - A course object (from the dataSet)
  */
-export function searchCourses(name = "", cid = "") {
+export function searchCourses(name = "", cid = "", dataSet = CourseData.Courses, forUI = true) {
     let foundCourses = [];
-    for (let i = 0; i < CourseData.Courses.length; i++) { // Iterate through courses
+    for (let i = 0; i < dataSet.length; i++) { // Iterate through courses
         if (
-            (CourseData.Courses[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
-            (CourseData.Courses[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "")
+            (dataSet[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
+            (dataSet[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "") ||
+            (name === "" && cid === "" && forUI)
         ) { // Test if the name or cid matches
-            foundCourses.push(CourseData.Courses[i]); // Add course to found courses
+            foundCourses.push(dataSet[i]); // Add course to found courses
         }
+    }
+    if (forUI) {
+        foundCourses = foundCourses.sort(function(a, b) {
+            return parseInt(a.cid) < parseInt(b.cid)
+        });
+        foundCourses = foundCourses.sort(function(a, b) {
+            // Get the index of the search term in each element
+            var indexA = a.name.toLowerCase().indexOf(name.toLowerCase());
+            var indexB = b.name.toLowerCase().indexOf(name.toLowerCase());
+
+            // Handle cases where the search term doesn't appear in one of the elements
+            if (indexA === -1 && indexB === -1) {
+                // If the search term doesn't appear in either element, maintain the original order
+                return 0;
+            } else if (indexA === -1) {
+                // If the search term only appears in the second element, move the first element before it
+                return -1;
+            } else if (indexB === -1) {
+                // If the search term only appears in the first element, move the second element before it
+                return 1;
+            } else {
+                var spaceBeforeA = (indexA > 0 && a.name[indexA - 1] === ' ') || indexA === 0;
+                var spaceBeforeB = (indexB > 0 && b.name[indexB - 1] === ' ') || indexB === 0;
+                
+                // If there's a space before one of them, place it before the other
+                if (spaceBeforeA && !spaceBeforeB) {
+                    return -1;
+                } else if (!spaceBeforeA && spaceBeforeB) {
+                    return 1;
+                } else {
+                    // If the search term appears in both elements, compare their positions
+                    return indexA - indexB;
+                }
+            }
+        });
     }
     return foundCourses;
 }
@@ -49,7 +87,7 @@ export function preSearch(inname, prerequisites, prerequisite_types, displayNoPr
             }) === -1
         ) { // Test if the prerequisite matches a already scanned prerequisite
             coursePrerequisites.push(prerequisite); // Add to course prerequisites
-            let results = searchCourses(prerequisites[i]); // Search for the prerequisite course
+            let results = searchCourses(prerequisites[i], "", CourseData.Courses, false); // Search for the prerequisite course
             if (results.length >= 1 && recursion <= 10) { // If it exists and we have not hit max recursion
                 if (results[0].prerequisites.length > 0) { // If it has prerequisites
                     for (var prerequisiteIndex = 0; prerequisiteIndex < results.length; prerequisiteIndex++) { // Go through each prerequisite
@@ -201,4 +239,12 @@ export function fetchAvailableCourses() {
         return true;
     });
     return availableCourses;
+}
+export function filterAvailableCourses(name, cid, availableCourses) {
+    var filteredCourses = searchCourses(name, cid, availableCourses);
+    return filteredCourses
+}
+
+export function isStarred(course) {
+    return Data.starredCourses.value.indexOf(course) !== -1
 }
