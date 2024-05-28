@@ -46,7 +46,7 @@ export async function addTakenCourse(e) {
     }
     if (FilterSearch.wasNotTaken(cc)) { // If the course has not been taken
         var ev = e.currentTarget; // Get the event target
-        await UI.promptForRegentsExamScore(cc); // See if we need a score
+        await UI.promptForRegentsExamScore(cc, e.currentTarget.id); // See if we need a score
         takenCourses.value.push(cc); // Add the course to taken courses
         ev.firstChild.innerHTML = ev.firstChild.innerHTML + TAKEN; // Add a checkmark to the start of the info area
         Global.errorHandle(() => {

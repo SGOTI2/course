@@ -4,6 +4,7 @@ import * as Global from "./global.js"
 import * as CourseData from "./courseData.js"
 import * as Data from "./data.js"
 export const filterGrades = new Global.State([9,10,11,12])
+export const filterSubjects = new Global.State("Any")
 /**
  * Search Courses for a course
  * 
@@ -180,15 +181,15 @@ export function checkIfExamScoreRequired(course) {
  * Filter the courses based on search inputs
  * 
  * @param {course} course - The course to check and prompt for
- * @returns {boolean}
+ * @returns {boolean} - Should invalidate the course for not meeting filters (false = Meets Filter Requirements)
 */
-export function FilterCourse(course) {
+export function FilterCourse(course, creditName) {
     if (course === undefined) {
         return false;
     } // If there is no course, don't search it
-    let selectedCredit = document.getElementById("creditFilter").value;
+    let selectedCredit = creditName;
     let creditText = Conversion.convertCreditToText(course.credits[0][0]);
-    if (selectedCredit != "Any Credit") {
+    if (selectedCredit != "Any") {
         if (selectedCredit != creditText) {
             if (selectedCredit != "Music") {
                 return true;
@@ -230,7 +231,7 @@ export function wasNotTaken(course) {
 export function fetchAvailableCourses() {
     var availableCourses = CourseData.Courses;
     availableCourses = availableCourses.filter((value) => {
-        if (!coursePrerequisitesMet(value)) {
+        if (!coursePrerequisitesMet(value) && document.querySelector("input#availableShowOnlyCompletePrerequisites").checked) {
             return false;
         }
         if (!wasNotTaken(value)) {
@@ -242,7 +243,13 @@ export function fetchAvailableCourses() {
 }
 export function filterAvailableCourses(name, cid, availableCourses) {
     var filteredCourses = searchCourses(name, cid, availableCourses);
-    return filteredCourses
+    var finalFilteredCourses = []
+    for (let i = 0; i < filteredCourses.length; i++) {
+        if (!FilterCourse(filteredCourses[i], filterSubjects.value)) {
+            finalFilteredCourses.push(filteredCourses[i])
+        }
+    }
+    return finalFilteredCourses
 }
 
 export function isStarred(course) {

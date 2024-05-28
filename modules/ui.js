@@ -219,20 +219,24 @@ export function AvailableCoursesSubjectsCallback(e) {
     if (!hadPrimary) {
         e.currentTarget.classList.add("active")
         e.currentTarget.setAttribute("aria-current", "true")
+        FilterSearch.filterSubjects.value = e.currentTarget.innerText
     } else {
         const anyElement = document.querySelector("ul#subjectsDropdown > li > button#subjectsDropdownAny")
         anyElement.classList.add("active")
         anyElement.setAttribute("aria-current", "true")
+        FilterSearch.filterSubjects.value = anyElement.innerText
     }
+    PropagateAvailableCourses();
 }
 
 /**
  * Check and prompt if needed for a regents exam score
  * 
  * @param {course} cc - The course to check and prompt for
+ * @param {String} listItemElementID - The ID of the element clicked, the prompt box will appear inside this element
  * @returns {Promise | void} - Promise for when the score is complete
 */
-export async function promptForRegentsExamScore(cc) {
+export async function promptForRegentsExamScore(cc, listItemElementID) {
     let checkResult = FilterSearch.checkIfExamScoreRequired(cc) // Check if we need the score
     if (!checkResult[0]) {
         return; // If we don't need a score, don't continue
@@ -329,6 +333,9 @@ export function loadCall() {
         element.addEventListener("click", AvailableCoursesSubjectsCallback)
     })
 
+    document.querySelector("input#availableShowOnlyCompletePrerequisites").addEventListener('change', () => {
+        PropagateAvailableCourses();
+    })
     PropagateTakenCourses();
     // document.getElementById("addcomplete").addEventListener("click", () => { // + Button
     //     document.getElementById("addcompletebox").style.display = "flex"; // Unhide the search panel

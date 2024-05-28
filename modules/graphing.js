@@ -172,7 +172,7 @@ export function PropagateCourseChart() {
         let inCourseID = CourseData.Courses.findIndex((e) => {
             return e.name === appendData[i][1] || e.name === appendData[i][1] + " &#10003;";
         });
-        if (FilterSearch.FilterCourse(CourseData.Courses[inCourseID])) {
+        if (FilterSearch.FilterCourse(CourseData.Courses[inCourseID], document.getElementById("creditFilter").value)) {
             continue;
         }
         let greyify = false;
