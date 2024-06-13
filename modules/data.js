@@ -3,7 +3,6 @@ import * as FilterSearch from "./filterSearch.js";
 import * as CourseData from "./courseData.js";
 import * as Global from "./global.js"
 import * as UI from "./ui.js";
-import * as Graphing from "./graphing.js";
 export const data = new Global.State({});
 export const takenCourses = new Global.State([]);
 export const starredCourses = new Global.State([]);
@@ -26,8 +25,8 @@ export const GradeExamCount = new Global.State({
 export function pushRegentsExamScore(cc, score, type) {
     let addingData = [cc.cid, score] // The data being added
     switch (type) {
-        case MATH_CREDIT:
-            GradeExamCount.math.push(addingData) // Add to math exams
+        case CourseData.MATH_CREDIT:
+            GradeExamCount.value.math.push(addingData) // Add to math exams
             return
     }
 }

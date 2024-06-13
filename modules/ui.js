@@ -242,19 +242,46 @@ export async function promptForRegentsExamScore(cc, listItemElementID) {
         return; // If we don't need a score, don't continue
     }
     return new Promise((resolve) => {
-        document.getElementById("res").style.display = "block"; // Unhide the prompt
-        let rescalcElement = document.getElementById("rescalc"); // Get the calculate button
-        rescalcElement.addEventListener("click", () => { // When clicked
-            let input = document.getElementById("resinp") // Get the input box
-            let matched = input.value.match(/\d+/g) // Get the numbers in the box
-            let out = "" // The output score
-            for (let i = 0; i < matched.length; i++) { // Go through all of the numbers in the input box
-                out += (matched[i]).toString() // This needs to be a string because we need to add all of the digits next to each other and not together. ex. ("1"+"5"="15") instead of (1+5 = 6)
+        let final = (e) => {
+            if (e.key != "Enter") {
+                return
             }
-            pushRegentsExamScore(cc, out, parseInt(checkResult[1])) // Add it to the exam scores
-            document.getElementById("res").style.display = "none"; // Hide the prompt
+            let inputElement = document.querySelector(`#${listItemElementID} > .res > input`) // Get the input box
+            let matched = inputElement.value.match(/\d+/g) // Get the numbers in the box
+            let score = ""
+            for (let i = 0; i < matched.length; i++) { // Go through all of the numbers in the input box
+                score += (matched[i]).toString() // This needs to be a string because we need to add all of the digits next to each other and not together. ex. ("1"+"5"="15") instead of (1+5 = 6)
+            }
+            Data.pushRegentsExamScore(cc, score, checkResult[1]) // checkResult[1] = creditType
+            inputElement.parentElement.remove()
             resolve("") // We now have the exam score and can return
-        }, { once: true })
+        }
+        let courseElement = document.getElementById(listItemElementID)
+        if (document.querySelector(`#${listItemElementID} > .res`) != null) {throw Error("Cannot Prompt Twice")}
+
+        let inp_box = document.createElement("div")
+        inp_box.classList.add("res")
+        inp_box.classList.add("pt-2")
+        inp_box.classList.add("input-group")
+        inp_box.classList.add("flex-nowrap")
+
+        let inp = document.createElement("input")
+        inp.type = "text"
+        inp.classList.add("form-control")
+        inp.ariaLabel = "Regents Exam Score"
+        inp.placeholder = "Regents Exam Score"
+        inp.setAttribute("aria-describedby", "res-percent")
+        inp.addEventListener("keypress", final)
+
+        let percentSign = document.createElement("span")
+        percentSign.innerText = "%"
+        percentSign.classList.add("input-group-text")
+        percentSign.id = "res-percent"
+
+        inp_box.appendChild(inp)
+        inp_box.appendChild(percentSign)
+        courseElement.appendChild(inp_box)
+
     })
 }
 /**
