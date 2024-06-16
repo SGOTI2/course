@@ -31,6 +31,48 @@ export function pushRegentsExamScore(cc, score, type) {
     }
 }
 /**
+ * Add the exam and score to the credit type
+ * 
+ * @param {string} cid - The courseID to get the score for
+ * @returns {[boolean, number]} - Weather there is even a score for the courseID provided and what it is if there is a score
+*/
+export function getRegentsExamScore(cid) {
+    const listID = (list) => {
+        for (let i = 0; i < list.length; i++) {
+            if (list[i][0] == cid) {
+                return list[i]
+            }
+        }
+        return -1
+    }
+    for (let array in GradeExamCount.value) {
+        let lID = listID(GradeExamCount.value[array])
+        if (lID != -1) {
+            return [true, lID[1]]
+        }
+    }
+    return [false, 0]
+}
+
+export function removeRegentsScore(cid) {
+    const listID = (list) => {
+        for (let i = 0; i < list.length; i++) {
+            if (list[i][0] == cid) {
+                return i
+            }
+        }
+        return -1
+    }
+    for (let array in GradeExamCount.value) {
+        let lID = listID(GradeExamCount.value[array])
+        if (lID != -1) {
+            GradeExamCount.value[array].splice(lID, 1)
+            return
+        }
+    }
+}
+
+/**
  * Add a course to taken courses from a click event
  * 
  * @param {MouseEvent} e - The event from the click listener
@@ -47,7 +89,7 @@ export async function addTakenCourse(e) {
         await UI.promptForRegentsExamScore(cc, e.currentTarget.id).then((ret) => { // Will immediately resolve if not required
             setTimeout(() => {
                 takenCourses.value.push(cc); // Add the course to taken courses
-                document.querySelector(`#${ret} > div`).innerHTML += TAKEN
+                document.querySelector(`#${ret} > div`).innerHTML += UI.takenComponent(cc)
                 Global.errorHandle(() => {
                     UI.PropagateTakenCourses(); // Update the list of taken courses
                     UI.PropagateTakenCourseSearchResults() // Update the main graph

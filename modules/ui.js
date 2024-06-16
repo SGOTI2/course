@@ -31,6 +31,16 @@ export function showCourse(course) {
         exams = "No Exams"
     }
     document.querySelector('input#courseInfoExams').value = exams; // Display exams
+    
+    let examScore = Data.getRegentsExamScore(course.cid)
+    if (examScore[0]) {
+        document.querySelector('input#courseInfoRegentsScore').parentElement.classList.remove("d-none")
+        document.querySelector('input#courseInfoRegentsScore').value = examScore[1]
+    } else {
+        document.querySelector('input#courseInfoRegentsScore').parentElement.classList.add("d-none")
+        document.querySelector('input#courseInfoRegentsScore').value = ""
+    }
+
     let prerequisites = ""; // HTML of prerequisites to display
     let prerequisitesOrComplete = FilterSearch.coursePrerequisitesMet(course, true)[1]; // Variable to track if prerequisites are complete
     let prerequisites_complete = true;
@@ -58,6 +68,19 @@ export function showCourse(course) {
     prerequisiteStatus.innerHTML = prerequisites_complete ? "Complete " + CHECKMARK_SVG : "Incomplete " + X_SVG;
     Global.errorHandle(Graphing.GeneratePrerequisiteGraph, course);
 }
+
+// Simple for if a course was take add the badge and add the regents score if available
+export function takenComponent(course) {
+    var titleAppendix = ""
+    if (!FilterSearch.wasNotTaken(course)) {
+        titleAppendix = TAKEN
+        if (Data.getRegentsExamScore(course.cid)[0]) {
+            titleAppendix = `<div class="badge text-bg-success">Taken | ${Data.getRegentsExamScore(course.cid)[1]}%</div>`;
+        }
+    }
+    return titleAppendix
+}
+
 /**
  * Update the search results for taken courses
  * 
@@ -86,7 +109,7 @@ export function PropagateTakenCourseSearchResults() {
         }
         let tmp = `<div class="d-flex justify-content-between align-items-center">
                 <div class="fw-bold">${thisResult.name}</div>
-                ${!FilterSearch.wasNotTaken(thisResult) ? TAKEN : ``}
+                ${takenComponent(thisResult)}
             </div>
             <small class="d-flex gap-2">${thisResult.cid}</div><span class="text-body-secondary d-flex gap-2">${credits}</small>`
         let temp = document.createElement("a"); // The element that we are making
@@ -111,7 +134,7 @@ function generateCourseFragment(thisTakenCourse, extras, clickHandle) {
     let tmp = `
         <div class="d-flex justify-content-between align-items-center">
             <div class="fw-bold">${thisTakenCourse.name}</div>
-            ${extras()}
+            <div class="d-flex gap-2">${extras()}</div>
         </div>
         <small class="d-flex gap-2">${thisTakenCourse.cid}</div><span class="text-body-secondary d-flex gap-2">${credits}</small>`
     let temp = document.createElement("a"); // The element that we are making
@@ -142,7 +165,10 @@ export function PropagateTakenCourses() {
     for (let i = 0; i < Data.takenCourses.value.length; i++) { // Go through all taken courses
         let thisTakenCourse = Data.takenCourses.value[i]
         frag.appendChild(generateCourseFragment(thisTakenCourse, () => {
-            return !FilterSearch.coursePrerequisitesMet(thisTakenCourse) ? `<span class="badge text-bg-danger rounded-pill">Prerequisite Warning</span>` : ``
+            let returning = ""
+            returning += !FilterSearch.coursePrerequisitesMet(thisTakenCourse) ? `<span class="badge text-bg-danger rounded-pill">Prerequisite Warning</span>` : ``
+            returning += Data.getRegentsExamScore(thisTakenCourse.cid)[0] ? `<span class="badge text-bg-success rounded-pill">${Data.getRegentsExamScore(thisTakenCourse.cid)[1]}%</span>` : ""
+            return returning
         }, (e) => {
             e.preventDefault();
             let hasPrimary = e.currentTarget.classList.contains("active")
@@ -156,7 +182,7 @@ export function PropagateTakenCourses() {
                 e.currentTarget.setAttribute("aria-selected", "false")
 
 
-                viewButton.classList.remove("btn-secondary")
+                viewButton.classList.remove("btn-info")
                 viewButton.classList.add("btn-disabled")
                 viewButton.setAttribute("disabled", undefined)
 
@@ -271,7 +297,7 @@ export async function promptForRegentsExamScore(cc, listItemElementID) {
         inp_box.classList.add("flex-nowrap")
 
         let inp = document.createElement("input")
-        inp.type = "text"
+        inp.type = "number"
         inp.classList.add("form-control")
         inp.ariaLabel = "Regents Exam Score"
         inp.placeholder = "Regents Exam Score"
@@ -325,13 +351,14 @@ export function loadCall() {
 
     document.querySelector("button#takenRemoveButton").addEventListener("click", () => {
         if (takenCoursesSelectedIndex.value !== -1) {
+            Data.removeRegentsScore(Data.takenCourses.value[takenCoursesSelectedIndex.value].cid)
             Data.takenCourses.value.splice(takenCoursesSelectedIndex.value, 1); // Remove the course from taken courses
-
+            
             // Reset button states
             const viewButton = document.querySelector("button#takenViewButton")
             const removeButton = document.querySelector("button#takenRemoveButton")
 
-            viewButton.classList.remove("btn-secondary")
+            viewButton.classList.remove("btn-info")
             viewButton.classList.add("btn-disabled")
             viewButton.setAttribute("disabled", undefined)
 
