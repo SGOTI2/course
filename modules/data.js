@@ -44,19 +44,22 @@ export async function addTakenCourse(e) {
         return;
     }
     if (FilterSearch.wasNotTaken(cc)) { // If the course has not been taken
-        var ev = e.currentTarget; // Get the event target
-        await UI.promptForRegentsExamScore(cc, e.currentTarget.id); // See if we need a score
-        takenCourses.value.push(cc); // Add the course to taken courses
-        ev.firstChild.innerHTML = ev.firstChild.innerHTML + TAKEN; // Add a checkmark to the start of the info area
-        Global.errorHandle(() => {
-            UI.PropagateTakenCourses(); // Update the list of taken courses
-            //Graphing.PropagateCourseChart(); // Update the main graph
+        await UI.promptForRegentsExamScore(cc, e.currentTarget.id).then((ret) => { // Will immediately resolve if not required
+            setTimeout(() => {
+                takenCourses.value.push(cc); // Add the course to taken courses
+                document.querySelector(`#${ret} > div`).innerHTML += TAKEN
+                Global.errorHandle(() => {
+                    UI.PropagateTakenCourses(); // Update the list of taken courses
+                    UI.PropagateTakenCourseSearchResults() // Update the main graph
+                });
+            }, 0) // It's so dumb: https://stackoverflow.com/a/32380583
         });
     } else { // If we have taken the course
         takenCourses.value.splice(takenCourses.value.indexOf(cc), 1); // Remove it from taken courses
         e.currentTarget.firstChild.lastChild.remove(); // Remove the checkmark
         Global.errorHandle(() => {
             UI.PropagateTakenCourses(); // Update the list of taken courses
+            UI.PropagateTakenCourseSearchResults() // Update the main graph
             //Graphing.PropagateCourseChart(); // Update the main graph
         });
     }

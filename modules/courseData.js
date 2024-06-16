@@ -29,6 +29,15 @@ export const WORLD_LANGUAGE_CREDIT = 10;
 
 export const FULL_YEAR = 0;
 export const HALF_YEAR = 1;
+
+export const examsRequiredForCalculation = {
+    "0406": MATH_CREDIT,
+    "0411": MATH_CREDIT,
+    "0442": MATH_CREDIT,
+    "0440": MATH_CREDIT,
+    "0443": MATH_CREDIT
+}
+
 export const Courses = [
     {
         // MARK: ENGLISH

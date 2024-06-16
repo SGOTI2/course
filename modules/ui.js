@@ -237,15 +237,17 @@ export function AvailableCoursesSubjectsCallback(e) {
  * @returns {Promise | void} - Promise for when the score is complete
 */
 export async function promptForRegentsExamScore(cc, listItemElementID) {
-    let checkResult = FilterSearch.checkIfExamScoreRequired(cc) // Check if we need the score
-    if (!checkResult[0]) {
-        return; // If we don't need a score, don't continue
-    }
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        let checkResult = FilterSearch.checkIfExamScoreRequired(cc) // Check if we need the score
+        if (!checkResult[0]) {
+            resolve(listItemElementID); // If we don't need a score, don't continue
+            return;
+        }
         let final = (e) => {
             if (e.key != "Enter") {
                 return
             }
+            e.currentTarget.removeEventListener("keydown", final)
             let inputElement = document.querySelector(`#${listItemElementID} > .res > input`) // Get the input box
             let matched = inputElement.value.match(/\d+/g) // Get the numbers in the box
             let score = ""
@@ -254,10 +256,13 @@ export async function promptForRegentsExamScore(cc, listItemElementID) {
             }
             Data.pushRegentsExamScore(cc, score, checkResult[1]) // checkResult[1] = creditType
             inputElement.parentElement.remove()
-            resolve("") // We now have the exam score and can return
+            resolve(listItemElementID) // We now have the exam score and can return
         }
         let courseElement = document.getElementById(listItemElementID)
-        if (document.querySelector(`#${listItemElementID} > .res`) != null) {throw Error("Cannot Prompt Twice")}
+        if (document.querySelector(`#${listItemElementID} > .res`) != null) {
+            reject("Cannot Prompt Twice")
+            return
+        }
 
         let inp_box = document.createElement("div")
         inp_box.classList.add("res")

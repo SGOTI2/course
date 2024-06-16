@@ -162,20 +162,10 @@ export function coursePrerequisitesMet(course, just_or = false) {
  * @returns {[boolean, number]} - Do we need to prompt for score and for what credit type
 */
 export function checkIfExamScoreRequired(course) {
-    switch (course.cid) {
-        case "0406":
-            return [true, CourseData.MATH_CREDIT]
-        case "0411":
-            return [true, CourseData.MATH_CREDIT]
-        case "0442":
-            return [true, CourseData.MATH_CREDIT]
-        case "0440":
-            return [true, CourseData.MATH_CREDIT]
-        case "0443":
-            return [true, CourseData.MATH_CREDIT]
-        default:
-            return [false, 0] // It does not match a course we need a grade for
+    if (course.cid in CourseData.examsRequiredForCalculation) {
+        return [true, CourseData.examsRequiredForCalculation[course.cid]];
     }
+    return [false, 0]
 }
 /**
  * Filter the courses based on search inputs
