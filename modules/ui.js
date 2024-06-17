@@ -8,6 +8,37 @@ import * as CourseData from "./courseData.js";
 
 const takenCoursesSelectedIndex = new Global.State(-1);
 
+export function shownCourseRegentsUpdateHandler() {
+    let regentsScoreElement = document.querySelector('input#courseInfoRegentsScore');
+    let course = Data.takenCourses.value[takenCoursesSelectedIndex.value];
+    let checkResult = FilterSearch.checkIfExamScoreRequired(course);
+    if (!checkResult[0]) {return [course, 0, checkResult]} // New Achievement: How did we get here? | Somehow we got an event when we don't need the score
+    let currentScore = Data.getRegentsExamScore(course.cid)[1];
+    let matched = regentsScoreElement.value.match(/\d+/g) // Get the numbers in the box
+    if (matched === null) {return [course, 0, checkResult]} // There are no numbers in the input, so don't continue
+    let score = ""
+    for (let i = 0; i < matched.length; i++) { // Go through all of the numbers in the input box
+        score += (matched[i]).toString() // This needs to be a string because we need to add all of the digits next to each other and not together. ex. ("1"+"5"="15") instead of (1+5 = 6)
+    }
+    if (currentScore != score) {
+        regentsScoreElement.classList.add("border-start", "border-modified")
+        regentsScoreElement.style = "translate: -1px 0px;"
+    } else {
+        regentsScoreElement.classList.remove("border-start", "border-modified")
+        regentsScoreElement.style = "";
+    }
+    return [course, score, checkResult]
+}
+
+function hideCourse() {
+    let vals = shownCourseRegentsUpdateHandler()
+    if (vals[2][0]) {
+        Data.removeRegentsScore(vals[0].cid)
+        Data.pushRegentsExamScore(vals[0], vals[1], vals[2][1])
+        PropagateTakenCourses()
+    }
+}
+
 /**
  * Display a course on the screen
  * 
@@ -67,6 +98,7 @@ export function showCourse(course) {
     let prerequisiteStatus = document.querySelector("div#courseInfoPrerequisiteStatus"); // The element for if all the prerequisites are met
     prerequisiteStatus.innerHTML = prerequisites_complete ? "Complete " + CHECKMARK_SVG : "Incomplete " + X_SVG;
     Global.errorHandle(Graphing.GeneratePrerequisiteGraph, course);
+    shownCourseRegentsUpdateHandler() // Fixes a bug
 }
 
 // Simple for if a course was take add the badge and add the regents score if available
@@ -164,7 +196,7 @@ export function PropagateTakenCourses() {
     var frag = document.createDocumentFragment(); // Create a HTML fragment that will be added
     for (let i = 0; i < Data.takenCourses.value.length; i++) { // Go through all taken courses
         let thisTakenCourse = Data.takenCourses.value[i]
-        frag.appendChild(generateCourseFragment(thisTakenCourse, () => {
+        let cfrag = generateCourseFragment(thisTakenCourse, () => {
             let returning = ""
             returning += !FilterSearch.coursePrerequisitesMet(thisTakenCourse) ? `<span class="badge text-bg-danger rounded-pill">Prerequisite Warning</span>` : ``
             returning += Data.getRegentsExamScore(thisTakenCourse.cid)[0] ? `<span class="badge text-bg-success rounded-pill">${Data.getRegentsExamScore(thisTakenCourse.cid)[1]}%</span>` : ""
@@ -207,7 +239,12 @@ export function PropagateTakenCourses() {
                 takenCoursesSelectedIndex.value = i
             }
             //showCourse(CourseData.Courses[parseInt(e.currentTarget.id.split("tcipu")[1])]); // Show the course if not trashing it
-        }));
+        })
+        if (takenCoursesSelectedIndex.value == i) {
+            cfrag.classList.add("active")
+            cfrag.setAttribute("aria-selected", "true")
+        }
+        frag.appendChild(cfrag);
     }
     document.getElementById("takenCourses").appendChild(frag); // Show the new HTML
     PropagateAvailableCourses();
@@ -270,37 +307,44 @@ export async function promptForRegentsExamScore(cc, listItemElementID) {
             return;
         }
         let final = (e) => {
-            if (e.key != "Enter") {
-                return
+            if (e instanceof KeyboardEvent) {
+                if (e.key != "Enter") {
+                    return
+                }
+                e.currentTarget.removeEventListener("keydown", final)
+            } else if (e instanceof MouseEvent) {
+                // Must have clicked the submit button, all good
+            } else {
+                return // We have no idea where this event came from
             }
-            e.currentTarget.removeEventListener("keydown", final)
-            let inputElement = document.querySelector(`#${listItemElementID} > .res > input`) // Get the input box
+            let inputElement = document.querySelector(`#${listItemElementID} > div > .res > input`) // Get the input box
             let matched = inputElement.value.match(/\d+/g) // Get the numbers in the box
             let score = ""
             for (let i = 0; i < matched.length; i++) { // Go through all of the numbers in the input box
                 score += (matched[i]).toString() // This needs to be a string because we need to add all of the digits next to each other and not together. ex. ("1"+"5"="15") instead of (1+5 = 6)
             }
             Data.pushRegentsExamScore(cc, score, checkResult[1]) // checkResult[1] = creditType
-            inputElement.parentElement.remove()
+            inputElement.parentElement.parentElement.remove()
             resolve(listItemElementID) // We now have the exam score and can return
         }
         let courseElement = document.getElementById(listItemElementID)
-        if (document.querySelector(`#${listItemElementID} > .res`) != null) {
+        if (document.querySelector(`#${listItemElementID} > div > .res`) != null) {
             reject("Cannot Prompt Twice")
             return
         }
+        let main_wrap = document.createElement("div")
+        main_wrap.classList.add("d-flex", "pt-2", "gap-2")
 
         let inp_box = document.createElement("div")
         inp_box.classList.add("res")
-        inp_box.classList.add("pt-2")
         inp_box.classList.add("input-group")
         inp_box.classList.add("flex-nowrap")
 
         let inp = document.createElement("input")
         inp.type = "number"
         inp.classList.add("form-control")
-        inp.ariaLabel = "Regents Exam Score"
-        inp.placeholder = "Regents Exam Score"
+        inp.ariaLabel = "Regents Score"
+        inp.placeholder = "Regents Score"
         inp.setAttribute("aria-describedby", "res-percent")
         inp.addEventListener("keypress", final)
 
@@ -311,7 +355,15 @@ export async function promptForRegentsExamScore(cc, listItemElementID) {
 
         inp_box.appendChild(inp)
         inp_box.appendChild(percentSign)
-        courseElement.appendChild(inp_box)
+        main_wrap.appendChild(inp_box)
+
+        let submitButton = document.createElement("button")
+        submitButton.classList.add("btn", "btn-success")
+        submitButton.innerText = "Save"
+        submitButton.addEventListener("click", final)
+
+        main_wrap.appendChild(submitButton)
+        courseElement.appendChild(main_wrap)
 
     })
 }
@@ -382,6 +434,18 @@ export function loadCall() {
         } else {
             console.error("Premature course info launch, Data not propagated!")
         }
+    })
+
+    document.querySelector('div#courseInfo').addEventListener('hide.bs.offcanvas', () => {
+        hideCourse()
+    })
+
+    document.querySelector("input#courseInfoRegentsScore").addEventListener("keyup", () => {
+        Global.errorHandle(shownCourseRegentsUpdateHandler)
+    })
+
+    document.querySelector("input#courseInfoRegentsScore").addEventListener("change", () => {
+        Global.errorHandle(shownCourseRegentsUpdateHandler)
     })
 
     document.querySelector("input#availableCourseNameSearch").addEventListener('keyup', () => {

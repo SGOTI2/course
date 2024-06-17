@@ -56,7 +56,10 @@ export function searchCourses(name = "", cid = "", dataSet = CourseData.Courses,
                     return 1;
                 } else {
                     // If the search term appears in both elements, compare their positions
-                    return indexA - indexB;
+                    if (indexA - indexB === 0) {
+                        return 0
+                    }
+                    return indexA - indexB > 0 ? 1 : -1; // Non-chrome browsers handle values >1 or <-1 as meaning move x number of positions instead of just taking it's direction of +-1
                 }
             }
         });
