@@ -345,8 +345,14 @@ export async function promptForRegentsExamScore(cc, listItemElementID) {
         inp.classList.add("form-control")
         inp.ariaLabel = "Regents Score"
         inp.placeholder = "Regents Score"
-        inp.setAttribute("aria-describedby", "res-percent")
         inp.addEventListener("keypress", final)
+        inp.setAttribute("aria-describedby", "res-percent")
+        inp.setAttribute("data-bs-toggle", "tooltip")
+        inp.setAttribute("data-bs-title", "Used for diploma progress and course suggestions")
+        inp.setAttribute("data-bs-placement", "bottom")
+        const tooltip = new bootstrap.Tooltip(inp, {
+            boundary: document.body
+        })
 
         let percentSign = document.createElement("span")
         percentSign.innerText = "%"
@@ -359,7 +365,7 @@ export async function promptForRegentsExamScore(cc, listItemElementID) {
 
         let submitButton = document.createElement("button")
         submitButton.classList.add("btn", "btn-success")
-        submitButton.innerText = "Save"
+        submitButton.innerText = "Add"
         submitButton.addEventListener("click", final)
 
         main_wrap.appendChild(submitButton)

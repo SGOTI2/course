@@ -28,7 +28,7 @@ export function searchCourses(name = "", cid = "", dataSet = CourseData.Courses,
     }
     if (forUI) {
         foundCourses = foundCourses.sort(function(a, b) {
-            return parseInt(a.cid) < parseInt(b.cid)
+            return parseInt(a.cid) < parseInt(b.cid) ? -1 : 1
         });
         foundCourses = foundCourses.sort(function(a, b) {
             // Get the index of the search term in each element
