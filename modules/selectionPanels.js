@@ -1,15 +1,10 @@
 export function loadCall() {
-    const split = window.Split(document.querySelector("div#splitPane").children, {
-        direction: 'vertical',
-        elementStyle: function (dimension, size, gutterSize) {
-            return {
-                'flex-basis': 'calc(' + size + '% - ' + gutterSize + 'px)',
-            }
-        },
-        gutterStyle: function (dimension, gutterSize) {
-            return {
-                'flex-basis': gutterSize + 'px',
-            }
-        },
+    document.querySelectorAll(".accordion").forEach((e, i, p) => {
+        e.addEventListener('show.bs.collapse', (ev) => {
+            ev.target.parentElement.classList.add('show')
+        })
+        e.addEventListener('hide.bs.collapse', (ev) => {
+            ev.target.parentElement.classList.remove('show')
+        })
     })
 }
