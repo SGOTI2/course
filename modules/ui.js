@@ -5,6 +5,7 @@ import * as Conversion from "./conversion.js"
 import * as FilterSearch from "./filterSearch.js";
 import * as Data from "./data.js";
 import * as CourseData from "./courseData.js";
+import * as SelectionPanels from "./selectionPanels.js"
 
 const takenCoursesSelectedIndex = new Global.State(-1);
 
@@ -465,6 +466,7 @@ export function loadCall() {
     document.querySelector("input#availableShowOnlyCompletePrerequisites").addEventListener('change', () => {
         PropagateAvailableCourses();
     })
+    SelectionPanels.loadCall()
     PropagateTakenCourses();
     // document.getElementById("addcomplete").addEventListener("click", () => { // + Button
     //     document.getElementById("addcompletebox").style.display = "flex"; // Unhide the search panel

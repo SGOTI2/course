@@ -5,6 +5,12 @@ import * as CourseData from "./courseData.js"
 import * as Data from "./data.js"
 export const filterGrades = new Global.State([9,10,11,12])
 export const filterSubjects = new Global.State("Any")
+
+// Some Sanitation, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 /**
  * Search Courses for a course
  * 
@@ -19,8 +25,8 @@ export function searchCourses(name = "", cid = "", dataSet = CourseData.Courses,
     let foundCourses = [];
     for (let i = 0; i < dataSet.length; i++) { // Iterate through courses
         if (
-            (dataSet[i].name.toLowerCase().search(name.toLowerCase()) != -1 && name != "") ||
-            (dataSet[i].cid.toLowerCase().search(cid.toLowerCase()) != -1 && cid != "") ||
+            (dataSet[i].name.toLowerCase().search(escapeRegExp(name.toLowerCase())) != -1 && name != "") ||
+            (dataSet[i].cid.toLowerCase().search(escapeRegExp(cid.toLowerCase())) != -1 && cid != "") ||
             (name === "" && cid === "" && forUI)
         ) { // Test if the name or cid matches
             foundCourses.push(dataSet[i]); // Add course to found courses
